@@ -4,12 +4,7 @@ DIR=`dirname $0`
 
 DB_NAME=${1:-$DELEGA_DB}
 
-dropdb $DB_NAME
-
 if [ "$DB_NAME" != "" ]; then
-    echo "Creating database $DB_NAME..."
-    createdb $DB_NAME
-
     echo "Installing Versioning..."
     psql -d $DB_NAME --quiet -w -f $DIR/Versioning/install.versioning.sql
 
