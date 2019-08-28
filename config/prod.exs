@@ -10,7 +10,9 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :delega, DelegaWeb.Endpoint,
-  url: [host: "example.com", port: 80],
+  http: [:inet6, port: System.get_env("PORT")],
+  url: [host: System.get_env("WEB_HOST"), port: 80],
+  load_from_system_env: true,
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production
