@@ -2,7 +2,7 @@
 
 DIR=`dirname $0`
 
-DB_NAME=${1:-$DELEGA_DB}
+DB_NAME=${1:-$DATABASE_URL}
 
 dropdb $DB_NAME
 
