@@ -1,0 +1,30 @@
+{
+    "search.exclude": {
+        "_build": true,
+        "cover": true,
+        "deps": true,
+        "doc": true,
+        ".fetch": true,
+        "erl_crash.dump": true,
+        "*.ez": true,
+        "delega-*.tar": true,
+        "npm-debug.log": true,
+        "assets/node_modules": true,
+        "priv/static": true,
+        ".elixir_ls": true
+    },
+    "files.exclude": {
+        "deps": true,
+        "_build": true,
+        "cover": true,
+        "doc": true,
+        ".fetch": true,
+        "erl_crash.dump": true,
+        "*.ez": true,
+        "delega-*.tar": true,
+        "npm-debug.log": true,
+        "assets/node_modules": true,
+        "priv/static": true,
+        ".elixir_ls": true
+    }
+}
