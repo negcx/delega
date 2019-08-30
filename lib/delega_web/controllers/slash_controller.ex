@@ -167,11 +167,12 @@ defmodule DelegaWeb.SlashController do
       case type do
         :delegated_by -> "by <@#{created_user_id}>"
         :delegated_to -> "to <@#{assigned_user_id}>"
+        :none -> ""
       end
 
     [
       section(
-        "> *#{todo}*\n> _Delegated #{timeframe} #{user_phrasing}_",
+        "*#{todo}*\n_Delegated #{timeframe} #{user_phrasing}_",
         overflow([
           option(":white_check_mark: Done", "complete:#{todo_id}"),
           option(":no_entry_sign: Reject", "reject:#{todo_id}")
@@ -196,7 +197,7 @@ defmodule DelegaWeb.SlashController do
           [section("*You have no todos!*")]
 
         _ ->
-          [section("*Delegated to You*")] ++
+          [section(":ballot_box_with_check: *Delegated to <@#{user_id}>*")] ++
             List.flatten(Enum.map(todos, &todo_block(&1, :delegated_by)))
       end
 
@@ -214,9 +215,9 @@ defmodule DelegaWeb.SlashController do
       Repo.all(
         from t in Todo,
           where:
-            t.assigned_user_id != ^user_id and
-              t.is_complete == false and
-              t.created_user_id == ^user_id
+            t.is_complete == false and
+              t.created_user_id == ^user_id and
+              t.assigned_user_id != ^user_id
       )
 
     blocks =
@@ -225,8 +226,15 @@ defmodule DelegaWeb.SlashController do
           [section("*You have no outstanding delegations!*")]
 
         _ ->
-          [section("*Delegated to Others*"), divider()] ++
-            List.flatten(Enum.map(todos, &todo_block(&1, :delegated_to)))
+          todos_by_user_id = todos |> Enum.group_by(&Map.get(&1, :assigned_user_id))
+
+          # sections =
+          todos_by_user_id
+          |> Enum.map(fn {user_id, todo_list} ->
+            [section(":ballot_box_with_check: *Delegated to <@#{user_id}>*")] ++
+              List.flatten(Enum.map(todo_list, &todo_block(&1, :none)))
+          end)
+          |> List.flatten()
       end
 
     json(conn, %{
