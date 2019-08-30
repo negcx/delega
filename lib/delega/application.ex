@@ -6,14 +6,16 @@ defmodule Delega.Application do
   use Application
 
   def start(_type, _args) do
+    import Supervisor.Spec
     # List all child processes to be supervised
     children = [
       # Start the Ecto repository
       Delega.Repo,
       # Start the endpoint when the application starts
-      DelegaWeb.Endpoint
+      DelegaWeb.Endpoint,
       # Starts a worker by calling: Delega.Worker.start_link(arg)
       # {Delega.Worker, arg},
+      worker(Delega.UserCache, [])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

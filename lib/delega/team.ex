@@ -12,7 +12,7 @@ defmodule Delega.Team do
 
   def changeset(team, params \\ %{}) do
     team
-    |> cast(params, [:team_id, :oauth_token])
-    |> validate_required([:team_id, :oauth_token])
+    |> cast(params, [:team_id, :access_token])
+    |> validate_required([:team_id, :access_token])
   end
 end

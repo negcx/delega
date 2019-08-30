@@ -21,7 +21,7 @@ defmodule DelegaWeb.OAuthController do
     )
 
     # pull users
-    IO.inspect(Slack.API.get_users(access_token))
+    Delega.UserCache.load_from_slack(%{team_id: team_id, access_token: access_token})
 
     render(conn, "oauth_success.html")
   end

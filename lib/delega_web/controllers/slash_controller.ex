@@ -4,6 +4,7 @@ defmodule DelegaWeb.SlashController do
   alias Delega.Repo
   alias Delega.Team
   alias Delega.Todo
+  alias Delega.UserCache
 
   import Slack.Messaging
 
@@ -18,17 +19,6 @@ defmodule DelegaWeb.SlashController do
       |> String.split("|")
 
     user_id
-  end
-
-  def valid_user?(user_id, token) do
-    user_count =
-      Slack.API.get_users(token)
-      |> Map.get(:body)
-      |> Jason.decode!()
-      |> Map.get("members")
-      |> Enum.count(&(Map.get(&1, "id") == user_id))
-
-    user_count > 0
   end
 
   def get_action_value(action) do
@@ -181,7 +171,7 @@ defmodule DelegaWeb.SlashController do
 
     [
       section(
-        "*#{todo}*\n _Delegated #{timeframe} #{user_phrasing}_",
+        "> *#{todo}*\n> _Delegated #{timeframe} #{user_phrasing}_",
         overflow([
           option(":white_check_mark: Done", "complete:#{todo_id}"),
           option(":no_entry_sign: Reject", "reject:#{todo_id}")
@@ -206,7 +196,7 @@ defmodule DelegaWeb.SlashController do
           [section("*You have no todos!*")]
 
         _ ->
-          [section("*Delegated to You*"), divider()] ++
+          [section("*Delegated to You*")] ++
             List.flatten(Enum.map(todos, &todo_block(&1, :delegated_by)))
       end
 
@@ -260,9 +250,9 @@ defmodule DelegaWeb.SlashController do
       text
       |> String.trim_leading(user_token <> " ")
 
-    %{access_token: access_token} = Repo.get!(Team, team_id)
+    %{access_token: access_token} = team = Repo.get!(Team, team_id)
 
-    if valid_user?(user_id, access_token) do
+    if UserCache.valid_user?(team, user_id) do
       todo = %Todo{
         team_id: team_id,
         assigned_user_id: user_id,
