@@ -11,14 +11,12 @@ defmodule DelegaWeb.SlashController do
   import Ecto.Query, only: [from: 2]
 
   def parse_user_token(user_token) do
-    [user_id | _] =
-      user_token
-      |> String.trim()
-      |> String.trim_leading("<@")
-      |> String.trim_trailing(">")
-      |> String.split("|")
-
-    user_id
+    user_token
+    |> String.trim()
+    |> String.trim_leading("<@")
+    |> String.trim_trailing(">")
+    |> String.split("|")
+    |> hd
   end
 
   def get_action_value(action) do
@@ -207,6 +205,33 @@ defmodule DelegaWeb.SlashController do
     })
   end
 
+  def slash(conn, %{"text" => "help"}) do
+    blocks = [
+      section("""
+      :white_check_mark: *Delega Guide*
+      _Delega allows you to delegate tasks to your teammates and to yourself and track what tasks are outstanding. Delega will notify you when tasks you've delegated are completed._
+
+      *Commands start with `/delega` or `/dg`*
+      """),
+      section_with_fields([
+        markdown("*Delegate a task*\n`/dg @Username Your task description`\n"),
+        markdown("*List your todos*\n`/dg todo`\n"),
+        markdown("*List tasks you delegated*\n`/dg list`\n"),
+        markdown("*Help*\n`/dg help`\n")
+      ]),
+      section("""
+      Once you've completed a task, click the ... menu in Slack and click Done. We'll automatically notify the task owner.
+
+      Delega commands can be run in any channel - the information is only visible to you. Delega does not post to the channel.
+      """)
+    ]
+
+    json(conn, %{
+      "response_type" => "ephemeral",
+      "blocks" => blocks
+    })
+  end
+
   def slash(conn, %{
         "text" => "list",
         "user_id" => user_id
@@ -226,10 +251,8 @@ defmodule DelegaWeb.SlashController do
           [section(":white_check_mark: *You have no outstanding delegations!*")]
 
         _ ->
-          todos_by_user_id = todos |> Enum.group_by(&Map.get(&1, :assigned_user_id))
-
-          # sections =
-          todos_by_user_id
+          todos
+          |> Enum.group_by(&Map.get(&1, :assigned_user_id))
           |> Enum.map(fn {user_id, todo_list} ->
             [section(":ballot_box_with_check: *Delegated to <@#{user_id}>*")] ++
               List.flatten(Enum.map(todo_list, &todo_block(&1, :none)))

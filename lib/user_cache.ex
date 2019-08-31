@@ -43,7 +43,7 @@ defmodule Delega.UserCache do
     GenServer.call(UserCache, {:get, team_id})
   end
 
-  def valid_user?(%{team_id: team_id, access_token: _access_token} = team, user_id) do
+  def valid_user?(%{team_id: team_id, access_token: _} = team, user_id) do
     case Delega.UserCache.get(team_id)
          |> MapSet.member?(user_id) do
       true ->
@@ -55,7 +55,7 @@ defmodule Delega.UserCache do
     end
   end
 
-  def load_and_get(%{team_id: team_id, access_token: _access_token} = team) do
+  def load_and_get(%{team_id: team_id, access_token: _} = team) do
     Delega.UserCache.load_from_slack(team)
     Delega.UserCache.safe_get(team_id)
   end

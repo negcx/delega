@@ -100,4 +100,11 @@ defmodule Slack.Messaging do
       "blocks" => blocks
     }
   end
+
+  def section_with_fields(fields) do
+    %{
+      "type" => "section",
+      "fields" => fields
+    }
+  end
 end
