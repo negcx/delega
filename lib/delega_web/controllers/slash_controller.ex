@@ -194,7 +194,7 @@ defmodule DelegaWeb.SlashController do
     blocks =
       case length(todos) do
         0 ->
-          [section("*You have no todos!*")]
+          [section(":white_check_mark: *You have no todos!*")]
 
         _ ->
           [section(":ballot_box_with_check: *Delegated to <@#{user_id}>*")] ++
@@ -223,7 +223,7 @@ defmodule DelegaWeb.SlashController do
     blocks =
       case length(todos) do
         0 ->
-          [section("*You have no outstanding delegations!*")]
+          [section(":white_check_mark: *You have no outstanding delegations!*")]
 
         _ ->
           todos_by_user_id = todos |> Enum.group_by(&Map.get(&1, :assigned_user_id))
