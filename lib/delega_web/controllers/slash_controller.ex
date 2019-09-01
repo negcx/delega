@@ -65,6 +65,20 @@ defmodule DelegaWeb.SlashController do
   end
 
   def slash(conn, %{
+        "text" => "me " <> text,
+        "command" => command,
+        "team_id" => team_id,
+        "user_id" => created_user_id
+      }) do
+    slash(conn, %{
+      "text" => Renderer.user_id_to_str(created_user_id) <> " " <> text,
+      "command" => command,
+      "team_id" => team_id,
+      "user_id" => created_user_id
+    })
+  end
+
+  def slash(conn, %{
         "text" => "<@" <> text,
         "command" => command,
         "team_id" => team_id,
