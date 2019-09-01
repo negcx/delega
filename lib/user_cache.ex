@@ -33,8 +33,12 @@ defmodule Delega.UserCache do
       |> Map.get(:body)
       |> Jason.decode!()
       |> Map.get("members")
-      |> Enum.map(&Map.get(&1, "id"))
-      |> MapSet.new()
+      |> Enum.reduce(Map.new(), fn user, map ->
+        Map.put(map, Map.get(user, "id"), %{
+          user_id: Map.get(user, "id"),
+          tz_offset: Map.get(user, "tz_offset")
+        })
+      end)
 
     Delega.UserCache.put(team_id, users)
   end
@@ -45,13 +49,13 @@ defmodule Delega.UserCache do
 
   def valid_user?(%{team_id: team_id, access_token: _} = team, user_id) do
     case Delega.UserCache.get(team_id)
-         |> MapSet.member?(user_id) do
+         |> Map.has_key?(user_id) do
       true ->
         true
 
       false ->
         Delega.UserCache.load_and_get(team)
-        |> MapSet.member?(user_id)
+        |> Map.has_key?(user_id)
     end
   end
 
