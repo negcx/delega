@@ -5,19 +5,29 @@ defmodule Delega.Application do
 
   use Application
 
-  def start(_type, _args) do
+  def start(_type, args) do
     import Supervisor.Spec
     # List all child processes to be supervised
-    children = [
-      # Start the Ecto repository
-      Delega.Repo,
-      # Start the endpoint when the application starts
-      DelegaWeb.Endpoint,
-      # Starts a worker by calling: Delega.Worker.start_link(arg)
-      # {Delega.Worker, arg},
-      worker(Delega.UserCache, []),
-      worker(Delega.Reminders, [])
-    ]
+    test_children =
+      case args do
+        [env: :test] ->
+          [{Plug.Cowboy, scheme: :http, plug: Delega.MockSlackServer, options: [port: 8081]}]
+
+        [_] ->
+          []
+      end
+
+    children =
+      [
+        # Start the Ecto repository
+        Delega.Repo,
+        # Start the endpoint when the application starts
+        DelegaWeb.Endpoint,
+        # Starts a worker by calling: Delega.Worker.start_link(arg)
+        # {Delega.Worker, arg},
+        worker(Delega.UserCache, []),
+        worker(Delega.Reminders, [])
+      ] ++ test_children
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

@@ -11,4 +11,12 @@ defmodule Delega.SlackInteractiveTest do
              todo_id: 35
            }
   end
+
+  test "send_complete_msg" do
+    send_complete_msg(
+      "Kyle",
+      %{completed_user_id: "Gely", todo: "Test Todo"},
+      "an access token secret"
+    )
+  end
 end

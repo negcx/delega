@@ -21,10 +21,14 @@ defmodule Delega.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Delega.Application, []},
+      mod: {Delega.Application, [Mix.env()]},
+      applications: applications(Mix.env()),
       extra_applications: [:logger, :runtime_tools]
     ]
   end
+
+  defp applications(:test), do: applications(:default) ++ [:cowboy, :plug]
+  defp applications(_), do: [:httpoison]
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
@@ -49,7 +53,8 @@ defmodule Delega.MixProject do
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:quantum, "~> 2.3"},
       {:timex, "~> 3.0"},
-      {:excoveralls, "~> 0.10", only: :test}
+      {:excoveralls, "~> 0.10", only: :test},
+      {:plug, "~> 1.8"}
     ]
   end
 

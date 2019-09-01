@@ -36,6 +36,7 @@ config :phoenix, :json_library, Jason
 config :delega, signing_secret: System.get_env("SLACK_SIGNING_SECRET")
 config :delega, slack_client_secret: System.get_env("SLACK_CLIENT_SECRET")
 config :delega, slack_client_id: System.get_env("SLACK_CLIENT_ID")
+config :delega, slack_base_url: "https://slack.com/api/"
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

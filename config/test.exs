@@ -1,5 +1,7 @@
 use Mix.Config
 
+config :delega, slack_base_url: "http://localhost:8081/"
+
 # Configure your database
 config :delega, Delega.Repo,
   username: "postgres",
