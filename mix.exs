@@ -57,7 +57,6 @@ defmodule Delega.MixProject do
   defp aliases do
     [
       "db.setup": ["cmd ./sql/setup.sh"],
-      # test: ["cmd ./sql/setup.sh delega_test", "test"]
       test: ["cmd ./sql/migrate.sh delega_test", "test"]
     ]
   end
