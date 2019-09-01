@@ -10,6 +10,14 @@ use Mix.Config
 config :delega,
   ecto_repos: [Delega.Repo]
 
+# Reminders
+config :delega, Delega.Reminders,
+  jobs: [
+    # Configure the job to run every hour to send reminders
+    # at 9 in the morning
+    {"0 * * * *", {Delega.Reminders, :send_reminders, [9, 0]}}
+  ]
+
 # Configures the endpoint
 config :delega, DelegaWeb.Endpoint,
   url: [host: "localhost"],

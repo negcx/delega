@@ -3,9 +3,8 @@ defmodule Delega.Slack.Renderer do
   Library for rendering Delega business logic into Slack's message Block Kit format.
   """
   import Slack.Messaging
-  alias Delega.{Todo, Repo}
 
-  import Ecto.Query, only: [from: 2]
+  alias Delega.Todo
 
   @doc """
   Render a single todo with different phrasing depending on whether the todo is complete and depending on the options passed to `phrasing`.
@@ -128,13 +127,7 @@ defmodule Delega.Slack.Renderer do
   Render the user's todo list.
   """
   def render_todo_list(user_id) do
-    todos =
-      Repo.all(
-        from t in Todo,
-          where:
-            t.assigned_user_id == ^user_id and
-              t.is_complete == false
-      )
+    todos = Todo.get_todo_list(user_id)
 
     case length(todos) do
       0 ->
@@ -146,18 +139,16 @@ defmodule Delega.Slack.Renderer do
     end
   end
 
+  def render_todo_reminder(todos, user_id) do
+    [section(":ballot_box_with_check: *Here are today's todos:*")] ++
+      List.flatten(Enum.map(todos, &render_todo(&1, :delegated_by, user_id, :todo_list)))
+  end
+
   @doc """
   Render a list of todos delegated by the user, organized by the user they are assigned to.
   """
   def render_delegation_list(user_id) do
-    todos =
-      Repo.all(
-        from t in Todo,
-          where:
-            t.is_complete == false and
-              t.created_user_id == ^user_id and
-              t.assigned_user_id != ^user_id
-      )
+    todos = Todo.get_delegation_list(user_id)
 
     case length(todos) do
       0 ->

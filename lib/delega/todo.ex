@@ -2,6 +2,10 @@ defmodule Delega.Todo do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias Delega.{Todo, Repo}
+
+  import Ecto.Query, only: [from: 2]
+
   @primary_key {:todo_id, :id, autogenerate: true}
   schema "todo" do
     belongs_to :team, Delega.Team, references: :team_id, type: :string
@@ -28,5 +32,24 @@ defmodule Delega.Todo do
   def complete!(todo, completed_user_id) do
     todo = Ecto.Changeset.change(todo, is_complete: true, completed_user_id: completed_user_id)
     Delega.Repo.update!(todo)
+  end
+
+  def get_todo_list(user_id) do
+    Repo.all(
+      from t in Todo,
+        where:
+          t.assigned_user_id == ^user_id and
+            t.is_complete == false
+    )
+  end
+
+  def get_delegation_list(user_id) do
+    Repo.all(
+      from t in Todo,
+        where:
+          t.is_complete == false and
+            t.created_user_id == ^user_id and
+            t.assigned_user_id != ^user_id
+    )
   end
 end

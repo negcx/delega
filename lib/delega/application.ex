@@ -15,7 +15,8 @@ defmodule Delega.Application do
       DelegaWeb.Endpoint,
       # Starts a worker by calling: Delega.Worker.start_link(arg)
       # {Delega.Worker, arg},
-      worker(Delega.UserCache, [])
+      worker(Delega.UserCache, []),
+      worker(Delega.Reminders, [])
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

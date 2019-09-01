@@ -82,6 +82,21 @@ defmodule Delega.Slack.Interactive do
     end
   end
 
+  def send_todo_reminder(access_token, user_id) do
+    todos = Todo.get_todo_list(user_id)
+
+    if length(todos) > 0 do
+      blocks = Renderer.render_todo_reminder(todos, user_id)
+
+      Slack.API.post_message(%{
+        token: access_token,
+        channel: user_id,
+        blocks: blocks,
+        text: "Here are your todos for today"
+      })
+    end
+  end
+
   def dispatch_action(action_token, action_user_id, team_id, response_url) do
     %{context: context, todo_id: todo_id, action: action} = parse_action(action_token)
 
