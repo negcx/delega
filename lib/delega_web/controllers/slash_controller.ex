@@ -65,13 +65,16 @@ defmodule DelegaWeb.SlashController do
   end
 
   def slash(conn, %{
-        "text" => text,
+        "text" => "<@" <> text,
         "command" => command,
         "team_id" => team_id,
         "user_id" => created_user_id
       }) do
-    text = String.trim(text)
-    [user_token | _] = String.split(text)
+    user_token =
+      text
+      |> String.trim()
+      |> String.split()
+      |> hd
 
     user_id = parse_user_token(user_token)
 
@@ -89,25 +92,15 @@ defmodule DelegaWeb.SlashController do
         todo: todo_msg
       }
 
-      case Repo.insert(todo) do
+      case Repo.insert(todo, returning: true) do
         {:ok, todo} ->
-          todo_id_str = Integer.to_string(todo.todo_id)
-
           if created_user_id != user_id do
             Task.start(fn ->
               Slack.API.post_message(%{
                 token: access_token,
                 channel: user_id,
                 text: "<@#{created_user_id}> has delegated a new todo to you.",
-                blocks: [
-                  section(
-                    "*#{todo_msg}*\n_Delegated by <@#{created_user_id}>_",
-                    overflow([
-                      option(":white_check_mark: Done", "solo:complete:#{todo_id_str}"),
-                      option(":no_entry_sign: Reject", "solo:reject:#{todo_id_str}")
-                    ])
-                  )
-                ]
+                blocks: Renderer.render_todo(todo, :delegated_by, created_user_id, :solo)
               })
             end)
           end
@@ -115,30 +108,38 @@ defmodule DelegaWeb.SlashController do
           # Respond with created todo
           json(conn, %{
             "response_type" => "ephemeral",
-            "blocks" => [
-              section(
-                "*#{todo_msg}*\n_Delegated to <@#{user_id}>_",
-                overflow([
-                  option(":white_check_mark: Done", "solo:complete:#{todo_id_str}"),
-                  option(":no_entry_sign: Reject", "solo:reject:#{todo_id_str}")
-                ])
-              )
-            ]
+            "blocks" => Renderer.render_todo(todo, :delegated_to, created_user_id, :solo)
           })
 
         {:error, _} ->
           json(conn, %{
-            "text" => "Something went wrong!"
+            "text" => "Something went wrong, we couldn't delegate your task!"
           })
       end
     else
       json(
         conn,
         ephemeral_response([
-          section("*" <> command <> " " <> text <> "*"),
+          section("`" <> command <> " " <> text <> "`"),
           context([markdown("Sorry, that user doesn't exist.")])
         ])
       )
     end
+  end
+
+  def slash(conn, %{
+        "text" => text,
+        "command" => command
+      }) do
+    json(
+      conn,
+      ephemeral_response([
+        section("""
+          *`#{command} #{text}`*
+          Sorry, I don't understand this command. Here are some commands you can try.
+        """),
+        Renderer.render_commands()
+      ])
+    )
   end
 end

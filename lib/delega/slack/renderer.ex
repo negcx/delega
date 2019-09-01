@@ -29,21 +29,24 @@ defmodule Delega.Slack.Renderer do
       ) do
     timeframe = dt_to_timeframe(created_at)
 
-    assigned_user_str = user_id_to_str(assigned_user_id, context_user_id)
-
-    created_user_str = user_id_to_str(created_user_id, context_user_id)
-
     user_phrasing =
       case phrasing do
-        :delegated_by -> "by #{created_user_str}"
-        :delegated_to -> "to #{assigned_user_str}"
-        :none -> ""
+        :delegated_by ->
+          created_user_str = user_id_to_str(created_user_id, context_user_id)
+          "*#{todo}*\n_Delegated #{timeframe} by #{created_user_str}_"
+
+        :delegated_to ->
+          assigned_user_str = user_id_to_str(assigned_user_id, context_user_id)
+          "*#{todo}*\n_Delegated #{timeframe} to #{assigned_user_str}_"
+
+        :delegated_timeframe ->
+          "*#{todo}*\n_Delegated #{timeframe}_"
       end
 
     source_str =
       case source do
-        :todo_list -> "todo_list:"
-        :delegation_list -> "delegation_list:"
+        :todo_list -> "todo_list"
+        :delegation_list -> "delegation_list"
         _ -> "solo"
       end
 
@@ -51,10 +54,10 @@ defmodule Delega.Slack.Renderer do
       false ->
         [
           section(
-            "*#{todo}*\n_Delegated #{timeframe} #{user_phrasing}_",
+            user_phrasing,
             overflow([
-              option(":white_check_mark: Done", "#{source_str}complete:#{todo_id}"),
-              option(":no_entry_sign: Reject", "#{source_str}reject:#{todo_id}")
+              option(":white_check_mark: Done", "#{source_str}:complete:#{todo_id}"),
+              option(":no_entry_sign: Reject", "#{source_str}:reject:#{todo_id}")
             ])
           )
         ]
@@ -73,14 +76,6 @@ defmodule Delega.Slack.Renderer do
     end
   end
 
-  def render_todo_complete_msg(%{todo: todo, completed_user_id: completed_user_id}) do
-    IO.inspect(completed_user_id)
-
-    completed_user_str = user_id_to_str(completed_user_id)
-
-    [section(":white_check_mark: *#{todo}*\n _Completed by #{completed_user_str}_")]
-  end
-
   def render_todo_complete_msg(
         %{todo: todo, completed_user_id: completed_user_id},
         context_user_id
@@ -90,10 +85,23 @@ defmodule Delega.Slack.Renderer do
     [section(":white_check_mark: *#{todo}*\n _Completed by #{completed_user_str}_")]
   end
 
-  def render_todo_reject_msg(%{todo: todo}, deleted_user_id) do
+  def render_todo_reject_msg(%{todo: todo}, deleted_user_id, context_user_id) do
     [
-      section(":no_entry_sign: *#{todo}*\n_Rejected by #{user_id_to_str(deleted_user_id)}_")
+      section(
+        ":no_entry_sign: *#{todo}*\n_Rejected by #{
+          user_id_to_str(deleted_user_id, context_user_id)
+        }_"
+      )
     ]
+  end
+
+  def render_commands do
+    section_with_fields([
+      markdown("*Delegate a task*\n`/dg @Username Your task description`\n"),
+      markdown("*List your todos*\n`/dg todo`\n"),
+      markdown("*List tasks you delegated*\n`/dg list`\n"),
+      markdown("*Help*\n`/dg help`\n")
+    ])
   end
 
   @doc """
@@ -107,12 +115,7 @@ defmodule Delega.Slack.Renderer do
 
       *Commands start with `/delega` or `/dg`*
       """),
-      section_with_fields([
-        markdown("*Delegate a task*\n`/dg @Username Your task description`\n"),
-        markdown("*List your todos*\n`/dg todo`\n"),
-        markdown("*List tasks you delegated*\n`/dg list`\n"),
-        markdown("*Help*\n`/dg help`\n")
-      ]),
+      render_commands(),
       section("""
       Once you've completed a task, click the ... menu in Slack and click Done. We'll automatically notify the task owner.
 
@@ -165,7 +168,12 @@ defmodule Delega.Slack.Renderer do
         |> Enum.group_by(&Map.get(&1, :assigned_user_id))
         |> Enum.map(fn {user_id, todo_list} ->
           [section(":ballot_box_with_check: *Delegated to <@#{user_id}>*")] ++
-            List.flatten(Enum.map(todo_list, &render_todo(&1, :none, user_id, :delegation_list)))
+            List.flatten(
+              Enum.map(
+                todo_list,
+                &render_todo(&1, :delegated_timeframe, user_id, :delegation_list)
+              )
+            )
         end)
         |> List.flatten()
     end

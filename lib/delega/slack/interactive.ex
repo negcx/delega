@@ -15,7 +15,7 @@ defmodule Delega.Slack.Interactive do
       token: access_token,
       channel: to_user_id,
       text: "#{Renderer.user_id_to_str(completed_user_id)} completed #{todo_msg}",
-      blocks: Renderer.render_todo_complete_msg(todo)
+      blocks: Renderer.render_todo_complete_msg(todo, completed_user_id)
     })
   end
 
@@ -29,7 +29,7 @@ defmodule Delega.Slack.Interactive do
       token: access_token,
       channel: to_user_id,
       text: "#{Renderer.user_id_to_str(deleted_user_id)} rejected #{todo}",
-      blocks: Renderer.render_todo_reject_msg(%{todo: todo}, deleted_user_id)
+      blocks: Renderer.render_todo_reject_msg(%{todo: todo}, deleted_user_id, to_user_id)
     })
   end
 
@@ -76,9 +76,9 @@ defmodule Delega.Slack.Interactive do
     if not todo.is_complete do
       Repo.delete!(todo)
       send_bulk_reject_msg(todo, rejected_user_id, access_token)
-      Renderer.render_todo_reject_msg(todo, rejected_user_id)
+      Renderer.render_todo_reject_msg(todo, rejected_user_id, rejected_user_id)
     else
-      Renderer.render_todo_complete_msg(todo)
+      Renderer.render_todo_complete_msg(todo, rejected_user_id)
     end
   end
 
