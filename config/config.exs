@@ -7,6 +7,8 @@
 # General application configuration
 use Mix.Config
 
+config :delega, env: Mix.env()
+
 config :delega,
   ecto_repos: [Delega.Repo]
 

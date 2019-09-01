@@ -11,7 +11,11 @@ defmodule DelegaWeb.Router do
 
   pipeline :slack do
     plug :accepts, ["json"]
-    plug Slack.SignaturePlug
+
+    case Application.get_env(:delega, :env) do
+      :test -> nil
+      _ -> plug Slack.SignaturePlug
+    end
   end
 
   pipeline :api do
@@ -29,7 +33,6 @@ defmodule DelegaWeb.Router do
     pipe_through :slack
 
     post "/slash", SlashController, :slash
-    post "/slash/delega-list", SlashController, :delega_list
     post "/interactivity", SlashController, :interactivity
   end
 end
