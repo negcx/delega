@@ -10,7 +10,6 @@
         "delega-*.tar": true,
         "npm-debug.log": true,
         "assets/node_modules": true,
-        "priv/static": true,
         ".elixir_ls": true
     },
     "files.exclude": {
@@ -24,7 +23,6 @@
         "delega-*.tar": true,
         "npm-debug.log": true,
         "assets/node_modules": true,
-        "priv/static": true,
         ".elixir_ls": true
     }
 }
