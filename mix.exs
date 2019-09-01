@@ -10,7 +10,9 @@ defmodule Delega.MixProject do
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [coveralls: :test]
     ]
   end
 
@@ -46,7 +48,8 @@ defmodule Delega.MixProject do
       {:httpoison, "~> 1.5"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:quantum, "~> 2.3"},
-      {:timex, "~> 3.0"}
+      {:timex, "~> 3.0"},
+      {:excoveralls, "~> 0.10", only: :test}
     ]
   end
 
