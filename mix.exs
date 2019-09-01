@@ -21,14 +21,10 @@ defmodule Delega.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {Delega.Application, [Mix.env()]},
-      applications: applications(Mix.env()),
+      mod: {Delega.Application, [env: Mix.env()]},
       extra_applications: [:logger, :runtime_tools]
     ]
   end
-
-  defp applications(:test), do: applications(:default) ++ [:cowboy, :plug]
-  defp applications(_), do: [:httpoison]
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
@@ -67,7 +63,7 @@ defmodule Delega.MixProject do
   defp aliases do
     [
       "db.setup": ["cmd ./sql/setup.sh"],
-      test: ["cmd ./sql/migrate.sh delega_test", "test"]
+      test: ["cmd ./sql/migrate.sh delega_test &> /dev/null", "test"]
     ]
   end
 end

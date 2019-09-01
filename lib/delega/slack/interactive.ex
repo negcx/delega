@@ -119,7 +119,6 @@ defmodule Delega.Slack.Interactive do
       HTTPoison.post!(
         response_url,
         Jason.encode!(%{
-          # "replace_original" => "false",
           "response_type" => "ephemeral",
           "blocks" => blocks
         }),

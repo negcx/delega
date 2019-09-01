@@ -20,4 +20,8 @@ defmodule Delega.MockSlackServer do
   post "/users.list" do
     conn |> send_resp(200, "")
   end
+
+  post "/response_url" do
+    conn |> send_resp(200, "")
+  end
 end
