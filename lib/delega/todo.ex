@@ -25,8 +25,8 @@ defmodule Delega.Todo do
     |> validate_required([:team_id, :created_user_id, :assigned_user_id, :task])
   end
 
-  def complete(todo_id, user_id) do
-    todo = %Delega.Todo{todo_id: todo_id}
-    Ecto.Changeset.change(todo, is_complete: true, completed_user_id: user_id)
+  def complete!(todo, completed_user_id) do
+    todo = Ecto.Changeset.change(todo, is_complete: true, completed_user_id: completed_user_id)
+    Delega.Repo.update!(todo)
   end
 end

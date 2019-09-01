@@ -58,7 +58,7 @@ defmodule Delega.MixProject do
     [
       "db.setup": ["cmd ./sql/setup.sh"],
       # test: ["cmd ./sql/setup.sh delega_test", "test"]
-      test: ["test"]
+      test: ["cmd ./sql/migrate.sh delega_test", "test"]
     ]
   end
 end
