@@ -48,4 +48,25 @@ defmodule DelegaWeb.SlashControllerTest do
 
     json_response(conn, 200)
   end
+
+  test "Add a todo assigned to myself", %{conn: conn} do
+    team = setup()
+
+    conn =
+      post(conn, "/slack/slash",
+        text: "me a todo for me",
+        user_id: "Kyle",
+        team_id: team.team_id,
+        command: "/dg"
+      )
+
+    json_response(conn, 200)
+
+    todo =
+      from(t in Todo, where: t.todo == "a todo for me")
+      |> Repo.all()
+      |> hd
+
+    assert todo.created_user_id == "Kyle"
+  end
 end
