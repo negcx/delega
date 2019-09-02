@@ -1,2 +1,12 @@
-<h1>Delega</h1>
-<a href="https://slack.com/oauth/authorize?client_id=<%= @client_id %>&scope=commands,chat:write:bot,users:read"><img alt=""Add to Slack"" height="40" width="139" src="https://platform.slack-edge.com/img/add_to_slack.png" srcset="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" /></a>
+<div class="px-6 py-6 sm:px-12 sm:py-8 mx-auto container max-w-3xl">
+    <h1 class="font-bold text-5xl text-gray-900 text-center ">Delega</h1>
+    
+    <h2 class="text-3xl sm:text-6xl text-gray-900 text-center leading-none mt-6 sm:mt-12 font-light">A simple, free tool for delegating and tracking tasks in Slack.</h2>
+    
+    <h3 class="text-2xl sm:text-3xl text-gray-700 text-center my-10 font-hairline">We'll notify you when tasks are completed and send reminders every morning. Simple and effective, without having to leave Slack.</h3>
+
+    <!-- Slack Button -->
+    <div class="flex justify-center">
+        <a href="https://slack.com/oauth/authorize?client_id=<%= @client_id %>&scope=commands,chat:write:bot,users:read"><img alt="Add to Slack" height="80" width="278" src="<%= Routes.static_path(@conn, "/images/btn-add-to-slack.svg") %>" /></a>
+    </div>
+</div>
