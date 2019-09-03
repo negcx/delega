@@ -23,10 +23,10 @@ defmodule DelegaWeb.OAuthController do
     # pull users
     Delega.UserCache.load_from_slack(%{team_id: team_id, access_token: access_token})
 
-    render(conn, "oauth_success.html")
+    redirect(conn, to: "/oauth-success")
   end
 
   def index(conn, %{"error" => "access_denied"}) do
-    render(conn, "oauth_failure.html")
+    redirect(conn, to: "/oauth-failure")
   end
 end

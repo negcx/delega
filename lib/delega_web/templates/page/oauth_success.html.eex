@@ -1,0 +1,17 @@
+<div class="min-w-screen">
+    <div class="px-6 py-6 sm:px-12 sm:py-8 m-auto container max-w-3xl">
+        <h1 class="font-bold text-5xl text-gray-900 text-center ">Delega</h1>
+        
+        <h2 class="text-3xl sm:text-6xl text-gray-900 text-center leading-none mt-6 sm:mt-12 font-light">✅<br/>You've successfully added Delega to Slack.</h2>
+        
+        <h3 class="text-2xl sm:text-3xl text-gray-800 text-center my-10 font-hairline">Here are a few tips to get you started.</h3>   
+
+        <h4 class="font-mono">/delega @Kyle Delegate a todo to Kyle</h4>
+
+        <h4 class="font-mono">/delega me A todo assigned to me</h4>
+
+        <h4 class="font-mono">/delega todo</h4>
+
+        <h4 class="font-mono">/delega list</h4>
+    </div>
+</div>
