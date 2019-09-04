@@ -8,9 +8,11 @@
     <title>Delega</title>
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
   </head>
-  <body class="bg-gray-100">
+  <body class="sm:bg-gray-100 b-white">
     <header>
-
+      <div class="text-center mt-8">
+          <img class="inline-block" src='<%= Routes.static_path(@conn, "/images/delega-logo.svg")%>' width="200" />
+      </div>
     </header>
     <main role="main">
       <%= render @view_module, @view_template, assigns %>

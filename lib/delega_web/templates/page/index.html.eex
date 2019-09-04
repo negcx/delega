@@ -1,10 +1,8 @@
 <div class="min-w-screen">
     <div class="px-6 py-6 sm:px-12 sm:py-8 m-auto container max-w-3xl">
-        <h1 class="font-bold text-5xl text-gray-900 text-center ">Delega</h1>
+        <h2 class="text-3xl sm:text-6xl text-gray-900 text-center leading-none font-light">A simple, free tool for delegating and tracking tasks in Slack.</h2>
         
-        <h2 class="text-3xl sm:text-6xl text-gray-900 text-center leading-none mt-6 sm:mt-12 font-light">A simple, free tool for delegating and tracking tasks in Slack.</h2>
-        
-        <h3 class="text-2xl sm:text-3xl text-gray-800 text-center my-10 font-hairline">We'll notify you when tasks are completed and send reminders every morning. Simple and effective, without having to leave Slack.</h3>
+        <h3 class="text-2xl sm:text-3xl text-gray-900 text-center my-10 font-hairline">We'll notify you when tasks are completed and send reminders every morning. Simple and effective, without having to leave Slack.</h3>
 
         <!-- Slack Button -->
         <div class="flex justify-center">
