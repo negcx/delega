@@ -1,0 +1,11 @@
+<div class="mx-auto max-w-sm m-16">
+    <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega</span> <span class="text-blue-700">@Kyle</span> Delegate a todo to Kyle</h4>
+
+    <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega me</span> Assign a todo to yourself</h4>
+
+    <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega todo</span> <span class="text-gray-500">list your todos</span></h4>
+
+    <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega list</span> <span class="text-gray-500">todos you've delegated</span></h4>
+
+    <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega help</span> <span class="text-gray-500">show the guide</span></h4>
+</div>
