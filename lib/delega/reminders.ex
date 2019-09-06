@@ -23,7 +23,7 @@ defmodule Delega.Reminders do
         distinct: true,
         join: todo in Todo,
         on: todo.team_id == team.team_id,
-        where: todo.is_complete == false,
+        where: todo.status == "NEW",
         select: %{
           team_id: team.team_id,
           access_token: team.access_token,

@@ -13,11 +13,13 @@ defmodule Delega.Todo do
     field :created_user_id, :string
     field :assigned_user_id, :string
     field :completed_user_id, :string
+    field :rejected_user_id, :string
 
     field :todo, :string
-    field :is_complete, :boolean
+    field :status, :string
 
     field :completed_at, :utc_datetime_usec
+    field :rejected_at, :utc_datetime_usec
 
     field :created_at, :utc_datetime_usec
     field :updated_at, :utc_datetime_usec
@@ -30,7 +32,12 @@ defmodule Delega.Todo do
   end
 
   def complete!(todo, completed_user_id) do
-    todo = Ecto.Changeset.change(todo, is_complete: true, completed_user_id: completed_user_id)
+    todo = Ecto.Changeset.change(todo, status: "COMPLETE", completed_user_id: completed_user_id)
+    Delega.Repo.update!(todo)
+  end
+
+  def reject!(todo, rejected_user_id) do
+    todo = Ecto.Changeset.change(todo, status: "REJECTED", rejected_user_id: rejected_user_id)
     Delega.Repo.update!(todo)
   end
 
@@ -39,7 +46,7 @@ defmodule Delega.Todo do
       from t in Todo,
         where:
           t.assigned_user_id == ^user_id and
-            t.is_complete == false
+            t.status == "NEW"
     )
   end
 
@@ -47,7 +54,7 @@ defmodule Delega.Todo do
     Repo.all(
       from t in Todo,
         where:
-          t.is_complete == false and
+          t.status == "NEW" and
             t.created_user_id == ^user_id and
             t.assigned_user_id != ^user_id
     )

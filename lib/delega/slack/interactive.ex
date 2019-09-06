@@ -49,6 +49,15 @@ defmodule Delega.Slack.Interactive do
     )
   end
 
+  def send_welcome_msg(user_id, access_token) do
+    Slack.API.post_message(%{
+      token: access_token,
+      channel: user_id,
+      blocks: Renderer.render_welcome_msg(),
+      text: "Welcome to Delega!"
+    })
+  end
+
   def parse_action(action_token) do
     list = action_token |> String.split(":")
 
@@ -61,7 +70,7 @@ defmodule Delega.Slack.Interactive do
 
   def do_action("complete", todo, completed_user_id, access_token) do
     todo =
-      if not todo.is_complete do
+      if todo.status != "COMPLETE" do
         todo = todo |> Todo.complete!(completed_user_id)
         send_bulk_complete_msg(todo, access_token)
         todo
@@ -73,8 +82,8 @@ defmodule Delega.Slack.Interactive do
   end
 
   def do_action("reject", todo, rejected_user_id, access_token) do
-    if not todo.is_complete do
-      Repo.delete!(todo)
+    if todo.status != "COMPLETE" do
+      todo |> Todo.reject!(rejected_user_id)
       send_bulk_reject_msg(todo, rejected_user_id, access_token)
       Renderer.render_todo_reject_msg(todo, rejected_user_id, rejected_user_id)
     else

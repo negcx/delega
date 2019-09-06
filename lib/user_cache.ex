@@ -1,6 +1,9 @@
 defmodule Delega.UserCache do
   use GenServer
 
+  alias Delega.{Repo, User}
+  alias Delega.Slack.Interactive
+
   def start_link do
     GenServer.start_link(__MODULE__, %{}, name: UserCache)
   end
@@ -36,7 +39,8 @@ defmodule Delega.UserCache do
       |> Enum.reduce(Map.new(), fn user, map ->
         Map.put(map, Map.get(user, "id"), %{
           user_id: Map.get(user, "id"),
-          tz_offset: Map.get(user, "tz_offset")
+          tz_offset: Map.get(user, "tz_offset"),
+          team_id: team_id
         })
       end)
 
@@ -56,6 +60,45 @@ defmodule Delega.UserCache do
       false ->
         Delega.UserCache.load_and_get(team)
         |> Map.has_key?(user_id)
+    end
+  end
+
+  def validate_and_welcome(user_id, team) do
+    # First check in the database
+    user = User |> Repo.get(user_id)
+
+    case user do
+      nil ->
+        # Check in the cache
+        user =
+          case Delega.UserCache.get(team.team_id)
+               |> Map.get(user_id) do
+            # Check in the API
+            nil ->
+              Delega.UserCache.load_and_get(team)
+              |> Map.get(user_id)
+
+            user ->
+              user
+          end
+
+        case user do
+          nil ->
+            false
+
+          user ->
+            user = Map.merge(%User{}, user)
+            Repo.insert(user)
+
+            Task.start(fn -> Interactive.send_welcome_msg(user_id, team.access_token) end)
+
+            true
+        end
+
+      # User already exists in database
+      # No need to welcome
+      _ ->
+        true
     end
   end
 

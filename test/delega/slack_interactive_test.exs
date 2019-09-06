@@ -4,7 +4,7 @@ defmodule Delega.SlackInteractiveTest do
 
   import Delega.Slack.Interactive
 
-  alias Delega.{Repo, Team, Todo}
+  alias Delega.{Repo, Team, Todo, User}
 
   @base_url Application.get_env(:delega, :slack_base_url)
 
@@ -26,6 +26,9 @@ defmodule Delega.SlackInteractiveTest do
 
   def setup do
     team = %Team{team_id: "Delega", access_token: "a big secret"} |> Repo.insert!(returning: true)
+
+    %User{user_id: "Kyle", team_id: "Delega"} |> Repo.insert!(returning: true)
+    %User{user_id: "Gely", team_id: "Delega"} |> Repo.insert!(returning: true)
 
     todo =
       %Todo{
@@ -51,7 +54,7 @@ defmodule Delega.SlackInteractiveTest do
 
     todo = Repo.get!(Todo, todo.todo_id)
 
-    assert todo.is_complete == true
+    assert todo.status == "COMPLETE"
     assert todo.completed_user_id == "Kyle"
   end
 
@@ -65,6 +68,10 @@ defmodule Delega.SlackInteractiveTest do
       @base_url <> "response_url"
     )
 
-    assert Repo.get(Todo, todo.todo_id) == nil
+    todo = Repo.get!(Todo, todo.todo_id)
+
+    assert todo.status == "REJECTED"
+    assert todo.rejected_user_id != nil
+    assert todo.rejected_at != nil
   end
 end

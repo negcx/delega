@@ -17,8 +17,23 @@ defmodule Delega.MockSlackServer do
     conn |> send_resp(200, "")
   end
 
-  post "/users.list" do
-    conn |> send_resp(200, "")
+  get "/users.list" do
+    conn
+    |> send_resp(
+      200,
+      Jason.encode!(%{
+        "members" => [
+          %{
+            "id" => "Kyle",
+            "tz_offset" => -25200
+          },
+          %{
+            "id" => "Gely",
+            "tz_offset" => -25200
+          }
+        ]
+      })
+    )
   end
 
   post "/response_url" do

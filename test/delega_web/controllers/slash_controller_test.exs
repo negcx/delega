@@ -8,7 +8,13 @@ defmodule DelegaWeb.SlashControllerTest do
   def setup do
     team = %Team{team_id: "Delega", access_token: "a big secret"} |> Repo.insert!(returning: true)
 
-    UserCache.put("Delega", %{"Kyle" => %{tz_offset: -21000}})
+    UserCache.put("Delega", %{
+      "fake user" => %{
+        user_id: "fake user",
+        team_id: "Delega",
+        tz_offset: -25200
+      }
+    })
 
     team
   end

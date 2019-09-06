@@ -1,7 +1,7 @@
 defmodule DelegaWeb.SlashController do
   use DelegaWeb, :controller
 
-  alias Delega.{Repo, Team, Todo, UserCache}
+  alias Delega.{Repo, Team, Todo, UserCache, User}
   alias Delega.Slack.{Renderer, Interactive}
 
   import Slack.Messaging
@@ -98,7 +98,10 @@ defmodule DelegaWeb.SlashController do
 
     %{access_token: access_token} = team = Repo.get!(Team, team_id)
 
-    if UserCache.valid_user?(team, user_id) do
+    user_id_valid? = UserCache.validate_and_welcome(user_id, team)
+    created_user_id_valid? = UserCache.validate_and_welcome(created_user_id, team)
+
+    if user_id_valid? and created_user_id_valid? do
       todo = %Todo{
         team_id: team_id,
         assigned_user_id: user_id,

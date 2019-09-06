@@ -18,7 +18,7 @@ defmodule Delega.Slack.Renderer do
           todo_id: todo_id,
           created_at: created_at,
           assigned_user_id: assigned_user_id,
-          is_complete: is_complete,
+          status: status,
           completed_user_id: completed_user_id,
           completed_at: completed_at
         } = _todo,
@@ -49,8 +49,8 @@ defmodule Delega.Slack.Renderer do
         _ -> "solo"
       end
 
-    case is_complete do
-      false ->
+    case status do
+      "NEW" ->
         [
           section(
             user_phrasing,
@@ -61,7 +61,7 @@ defmodule Delega.Slack.Renderer do
           )
         ]
 
-      true ->
+      "COMPLETE" ->
         completed_user_str = user_id_to_str(completed_user_id, context_user_id)
         completed_timeframe = dt_to_timeframe(completed_at)
 
@@ -82,6 +82,11 @@ defmodule Delega.Slack.Renderer do
     completed_user_str = user_id_to_str(completed_user_id, context_user_id)
 
     [section(":white_check_mark: *#{todo}*\n _Completed by #{completed_user_str}_")]
+  end
+
+  def render_welcome_msg() do
+    # TODO
+    [section("Welcome to Delega! ...")]
   end
 
   def render_todo_reject_msg(%{todo: todo}, deleted_user_id, context_user_id) do
