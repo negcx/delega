@@ -10,6 +10,8 @@ defmodule Delega.Todo do
   schema "todo" do
     belongs_to :team, Delega.Team, references: :team_id, type: :string
 
+    has_many :channels, Delega.TodoChannel, foreign_key: :todo_id
+
     field :created_user_id, :string
     field :assigned_user_id, :string
     field :completed_user_id, :string

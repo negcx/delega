@@ -30,4 +30,37 @@ defmodule Slack.API do
       {"Authorization", "Bearer " <> token}
     ])
   end
+
+  def get_channels(token) do
+    HTTPoison.get!(
+      @base_url <> "conversations.list",
+      [
+        {"Authorization", "Bearer " <> token}
+      ],
+      params: %{
+        "limit" => 1000,
+        "exclude_archived" => true,
+        "types" => "public_channel,private_channel"
+      }
+    )
+    |> Map.get(:body)
+    |> Jason.decode!()
+    |> Map.get("channels")
+  end
+
+  def parse_channels(text) do
+    channels_re = ~r/(?<=<#)([A-Z0-9]+)/
+
+    channels_re
+    |> Regex.scan(text)
+    |> Enum.map(&hd/1)
+  end
+
+  def parse_users(text) do
+    users_re = ~r/(?<=<@)([A-Z0-9]+)/
+
+    users_re
+    |> Regex.scan(text)
+    |> Enum.map(&hd/1)
+  end
 end

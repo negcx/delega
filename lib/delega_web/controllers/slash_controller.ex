@@ -1,7 +1,7 @@
 defmodule DelegaWeb.SlashController do
   use DelegaWeb, :controller
 
-  alias Delega.{Repo, Team, Todo, UserCache, User}
+  alias Delega.{Repo, Team, Todo, UserCache, TodoChannel}
   alias Delega.Slack.{Renderer, Interactive}
 
   import Slack.Messaging
@@ -111,6 +111,23 @@ defmodule DelegaWeb.SlashController do
 
       case Repo.insert(todo, returning: true) do
         {:ok, todo} ->
+          # Check to see if there are any channels
+          channels = Slack.API.parse_channels(todo_msg)
+
+          channels
+          |> Enum.map(fn channel_id ->
+            TodoChannel.insert(todo.todo_id, channel_id)
+
+            Task.start(fn ->
+              Slack.API.post_message(%{
+                token: access_token,
+                channel: channel_id,
+                text: "<@#{created_user_id}> has added a new todo.",
+                blocks: Renderer.render_todo(todo, :public, "", :solo)
+              })
+            end)
+          end)
+
           if created_user_id != user_id do
             Task.start(fn ->
               Slack.API.post_message(%{

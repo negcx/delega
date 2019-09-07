@@ -4,7 +4,7 @@ defmodule Delega.Slack.Interactive do
   """
 
   alias Delega.Slack.Renderer
-  alias Delega.{Repo, Team, Todo}
+  alias Delega.{Repo, Team, Todo, TodoChannel}
 
   def send_complete_msg(
         to_user_id,
@@ -49,6 +49,23 @@ defmodule Delega.Slack.Interactive do
     )
   end
 
+  def notify_channels(todo, access_token, text, blocks) do
+    todo
+    |> Ecto.assoc(:channels)
+    |> Repo.all()
+    |> Enum.map(&Map.get(&1, :channel_id))
+    |> Enum.map(fn channel_id ->
+      Task.start(fn ->
+        Slack.API.post_message(%{
+          token: access_token,
+          text: text,
+          channel: channel_id,
+          blocks: blocks
+        })
+      end)
+    end)
+  end
+
   def send_welcome_msg(user_id, access_token) do
     Slack.API.post_message(%{
       token: access_token,
@@ -72,7 +89,16 @@ defmodule Delega.Slack.Interactive do
     todo =
       if todo.status != "COMPLETE" do
         todo = todo |> Todo.complete!(completed_user_id)
+
         send_bulk_complete_msg(todo, access_token)
+
+        notify_channels(
+          todo,
+          access_token,
+          "#{Renderer.user_id_to_str(completed_user_id)} completed #{todo.todo}",
+          Renderer.render_todo_complete_msg(todo, "")
+        )
+
         todo
       else
         todo
@@ -85,6 +111,14 @@ defmodule Delega.Slack.Interactive do
     if todo.status != "COMPLETE" do
       todo |> Todo.reject!(rejected_user_id)
       send_bulk_reject_msg(todo, rejected_user_id, access_token)
+
+      notify_channels(
+        todo,
+        access_token,
+        "#{Renderer.user_id_to_str(rejected_user_id)} rejected #{todo.todo}",
+        Renderer.render_todo_reject_msg(todo, rejected_user_id, "")
+      )
+
       Renderer.render_todo_reject_msg(todo, rejected_user_id, rejected_user_id)
     else
       Renderer.render_todo_complete_msg(todo, rejected_user_id)

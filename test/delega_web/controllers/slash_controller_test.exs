@@ -75,4 +75,8 @@ defmodule DelegaWeb.SlashControllerTest do
 
     assert todo.created_user_id == "Kyle"
   end
+
+  describe "CHANNELS" do
+
+  end
 end

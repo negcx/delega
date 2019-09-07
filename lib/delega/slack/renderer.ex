@@ -40,6 +40,11 @@ defmodule Delega.Slack.Renderer do
 
         :delegated_timeframe ->
           "*#{todo}*\n_Delegated #{timeframe}_"
+
+        :public ->
+          created_user_str = user_id_to_str(created_user_id, context_user_id)
+          assigned_user_str = user_id_to_str(assigned_user_id, context_user_id)
+          "*#{todo}*\n_Delegated by #{created_user_str} to #{assigned_user_str} #{timeframe}_"
       end
 
     source_str =
