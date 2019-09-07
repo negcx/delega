@@ -86,7 +86,11 @@ defmodule Delega.Slack.Renderer do
 
   def render_welcome_msg() do
     # TODO
-    [section("Welcome to Delega! ...")]
+    [
+      section(
+        ":wave: Welcome to Delega! Easily track and delegate tasks. Type */dg help* or */delega help* for more information."
+      )
+    ]
   end
 
   def render_todo_reject_msg(%{todo: todo}, deleted_user_id, context_user_id) do

@@ -10,6 +10,4 @@ defmodule Delega.User do
     field :created_at, :utc_datetime_usec
     field :updated_at, :utc_datetime_usec
   end
-
-  
 end
