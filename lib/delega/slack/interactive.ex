@@ -4,7 +4,7 @@ defmodule Delega.Slack.Interactive do
   """
 
   alias Delega.Slack.Renderer
-  alias Delega.{Repo, Team, Todo, TodoChannel}
+  alias Delega.{Repo, Team, Todo}
 
   def send_complete_msg(
         to_user_id,
