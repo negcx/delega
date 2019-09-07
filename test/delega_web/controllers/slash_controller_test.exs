@@ -5,7 +5,7 @@ defmodule DelegaWeb.SlashControllerTest do
 
   import Ecto.Query, only: [from: 2]
 
-  def setup do
+  setup do
     team = %Team{team_id: "Delega", access_token: "a big secret"} |> Repo.insert!(returning: true)
 
     UserCache.put("Delega", %{
@@ -16,20 +16,16 @@ defmodule DelegaWeb.SlashControllerTest do
       }
     })
 
-    team
+    [team: team]
   end
 
   test "/dg todo", %{conn: conn} do
-    setup()
-
     conn = post(conn, "/slack/slash", text: "todo", user_id: "Kyle")
 
     json_response(conn, 200)
   end
 
-  test "Add todos with slash command", %{conn: conn} do
-    team = setup()
-
+  test "Add todos with slash command", %{conn: conn, team: team} do
     conn =
       post(conn, "/slack/slash",
         text: "<@Kyle|kyle> My big todo",
@@ -55,9 +51,7 @@ defmodule DelegaWeb.SlashControllerTest do
     json_response(conn, 200)
   end
 
-  test "Add a todo assigned to myself", %{conn: conn} do
-    team = setup()
-
+  test "Add a todo assigned to myself", %{conn: conn, team: team} do
     conn =
       post(conn, "/slack/slash",
         text: "me a todo for me",
@@ -77,6 +71,5 @@ defmodule DelegaWeb.SlashControllerTest do
   end
 
   describe "CHANNELS" do
-
   end
 end

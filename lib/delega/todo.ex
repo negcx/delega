@@ -17,6 +17,11 @@ defmodule Delega.Todo do
     field :completed_user_id, :string
     field :rejected_user_id, :string
 
+    has_one :created_user, Delega.User, references: :created_user_id, foreign_key: :user_id
+    has_one :assigned_user, Delega.User, references: :assigned_user_id, foreign_key: :user_id
+    has_one :completed_user, Delega.User, references: :completed_user_id, foreign_key: :user_id
+    has_one :rejected_user, Delega.User, references: :rejected_user_id, foreign_key: :user_id
+
     field :todo, :string
     field :status, :string
 
@@ -35,17 +40,26 @@ defmodule Delega.Todo do
 
   def complete!(todo, completed_user_id) do
     todo = Ecto.Changeset.change(todo, status: "COMPLETE", completed_user_id: completed_user_id)
-    Delega.Repo.update!(todo)
+
+    Delega.Repo.update!(todo, returning: true)
   end
 
   def reject!(todo, rejected_user_id) do
     todo = Ecto.Changeset.change(todo, status: "REJECTED", rejected_user_id: rejected_user_id)
-    Delega.Repo.update!(todo)
+    Delega.Repo.update!(todo, returning: true)
+  end
+
+  def get_with_assoc(todo_id) do
+    from(t in Todo,
+      preload: [:completed_user, :created_user, :assigned_user, :rejected_user, :channels]
+    )
+    |> Repo.get(todo_id)
   end
 
   def get_todo_list(user_id) do
     Repo.all(
       from t in Todo,
+        preload: [:completed_user, :created_user, :assigned_user, :rejected_user, :channels],
         where:
           t.assigned_user_id == ^user_id and
             t.status == "NEW"
@@ -55,6 +69,7 @@ defmodule Delega.Todo do
   def get_delegation_list(user_id) do
     Repo.all(
       from t in Todo,
+        preload: [:completed_user, :created_user, :assigned_user, :rejected_user, :channels],
         where:
           t.status == "NEW" and
             t.created_user_id == ^user_id and

@@ -25,11 +25,19 @@ defmodule Delega.MockSlackServer do
         "members" => [
           %{
             "id" => "Kyle",
-            "tz_offset" => -25200
+            "tz_offset" => -25200,
+            "deleted" => false,
+            "profile" => %{
+              "display_name_normalized" => "kylesito"
+            }
           },
           %{
             "id" => "Gely",
-            "tz_offset" => -25200
+            "tz_offset" => -25200,
+            "deleted" => false,
+            "profile" => %{
+              "display_name_normalized" => "gelita"
+            }
           }
         ]
       })

@@ -14,22 +14,22 @@ defmodule Delega.Slack.Interactive do
     Slack.API.post_message(%{
       token: access_token,
       channel: to_user_id,
-      text: "#{Renderer.user_id_to_str(completed_user_id)} completed #{todo_msg}",
-      blocks: Renderer.render_todo_complete_msg(todo, completed_user_id)
+      text: "#{Renderer.escape_user_id(completed_user_id)} completed #{todo_msg}",
+      blocks: Renderer.render_todo(todo)
     })
   end
 
   def send_reject_msg(
         to_user_id,
         deleted_user_id,
-        %{todo: todo},
+        todo,
         access_token
       ) do
     Slack.API.post_message(%{
       token: access_token,
       channel: to_user_id,
-      text: "#{Renderer.user_id_to_str(deleted_user_id)} rejected #{todo}",
-      blocks: Renderer.render_todo_reject_msg(%{todo: todo}, deleted_user_id, to_user_id)
+      text: "#{Renderer.escape_user_id(deleted_user_id)} rejected #{todo.todo}",
+      blocks: Renderer.render_todo(todo)
     })
   end
 
@@ -86,42 +86,46 @@ defmodule Delega.Slack.Interactive do
   end
 
   def do_action("complete", todo, completed_user_id, access_token) do
-    todo =
-      if todo.status != "COMPLETE" do
-        todo = todo |> Todo.complete!(completed_user_id)
+    if todo.status != "COMPLETE" do
+      todo = todo |> Todo.complete!(completed_user_id)
 
-        send_bulk_complete_msg(todo, access_token)
+      todo = Todo.get_with_assoc(todo.todo_id)
 
-        notify_channels(
-          todo,
-          access_token,
-          "#{Renderer.user_id_to_str(completed_user_id)} completed #{todo.todo}",
-          Renderer.render_todo_complete_msg(todo, "")
-        )
+      send_bulk_complete_msg(todo, access_token)
 
-        todo
-      else
-        todo
-      end
+      notify_channels(
+        todo,
+        access_token,
+        "#{Renderer.escape_user_id(completed_user_id)} completed #{todo.todo}",
+        Renderer.render_todo(todo)
+      )
 
-    Renderer.render_todo_complete_msg(todo, completed_user_id)
+      Renderer.render_todo(todo)
+    else
+      Renderer.render_todo(todo)
+    end
   end
 
   def do_action("reject", todo, rejected_user_id, access_token) do
     if todo.status != "COMPLETE" do
-      todo |> Todo.reject!(rejected_user_id)
+      todo =
+        todo
+        |> Todo.reject!(rejected_user_id)
+
+      todo = Todo.get_with_assoc(todo.todo_id)
+
       send_bulk_reject_msg(todo, rejected_user_id, access_token)
 
       notify_channels(
         todo,
         access_token,
-        "#{Renderer.user_id_to_str(rejected_user_id)} rejected #{todo.todo}",
-        Renderer.render_todo_reject_msg(todo, rejected_user_id, "")
+        "#{Renderer.escape_user_id(rejected_user_id)} rejected #{todo.todo}",
+        Renderer.render_todo(todo)
       )
 
-      Renderer.render_todo_reject_msg(todo, rejected_user_id, rejected_user_id)
+      Renderer.render_todo(todo)
     else
-      Renderer.render_todo_complete_msg(todo, rejected_user_id)
+      Renderer.render_todo(todo)
     end
   end
 
@@ -129,7 +133,7 @@ defmodule Delega.Slack.Interactive do
     todos = Todo.get_todo_list(user_id)
 
     if length(todos) > 0 do
-      blocks = Renderer.render_todo_reminder(todos, user_id)
+      blocks = Renderer.render_todo_reminder(todos)
 
       Slack.API.post_message(%{
         token: access_token,
@@ -144,7 +148,7 @@ defmodule Delega.Slack.Interactive do
     %{context: context, todo_id: todo_id, action: action} = parse_action(action_token)
 
     %{access_token: access_token} = Team |> Repo.get!(team_id)
-    todo = Todo |> Repo.get!(todo_id)
+    todo = Todo.get_with_assoc(todo_id)
 
     action_blocks = do_action(action, todo, action_user_id, access_token)
 

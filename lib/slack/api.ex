@@ -56,6 +56,13 @@ defmodule Slack.API do
     |> Enum.map(&hd/1)
   end
 
+  def trim_channels(text) do
+    channels_re = ~r/^((\s+)?<#([A-Z0-9]+)\|([A-Za-z0-9]+)>(\s+)?)+/
+
+    channels_re
+    |> Regex.replace(text, "")
+  end
+
   def parse_users(text) do
     users_re = ~r/(?<=<@)([A-Z0-9]+)/
 

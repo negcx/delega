@@ -40,7 +40,9 @@ defmodule Delega.UserCache do
         Map.put(map, Map.get(user, "id"), %{
           user_id: Map.get(user, "id"),
           tz_offset: Map.get(user, "tz_offset"),
-          team_id: team_id
+          team_id: team_id,
+          is_deleted: Map.get(user, "deleted"),
+          display_name: Map.get(user, "profile") |> Map.get("display_name_normalized")
         })
       end)
 

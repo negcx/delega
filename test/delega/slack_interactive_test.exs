@@ -8,27 +8,26 @@ defmodule Delega.SlackInteractiveTest do
 
   @base_url Application.get_env(:delega, :slack_base_url)
 
-  test "parse_action" do
-    assert parse_action("todo_list:complete:35") == %{
-             context: "todo_list",
-             action: "complete",
-             todo_id: 35
-           }
-  end
-
-  test "send_complete_msg" do
-    send_complete_msg(
-      "Kyle",
-      %{completed_user_id: "Gely", todo: "Test Todo"},
-      "an access token secret"
-    )
-  end
-
-  def setup do
+  setup do
     team = %Team{team_id: "Delega", access_token: "a big secret"} |> Repo.insert!(returning: true)
 
-    %User{user_id: "Kyle", team_id: "Delega"} |> Repo.insert!(returning: true)
-    %User{user_id: "Gely", team_id: "Delega"} |> Repo.insert!(returning: true)
+    %User{
+      user_id: "Kyle",
+      team_id: "Delega",
+      tz_offset: -25200,
+      display_name: "kylesito",
+      is_deleted: false
+    }
+    |> Repo.insert!(returning: true)
+
+    %User{
+      user_id: "Gely",
+      team_id: "Delega",
+      tz_offset: -25200,
+      display_name: "gelita",
+      is_deleted: false
+    }
+    |> Repo.insert!(returning: true)
 
     todo =
       %Todo{
@@ -39,12 +38,18 @@ defmodule Delega.SlackInteractiveTest do
       }
       |> Repo.insert!(returning: true)
 
-    {team, todo}
+    [team: team, todo: todo]
   end
 
-  test "dispatch_action - complete" do
-    {_team, todo} = setup()
+  test "parse_action" do
+    assert parse_action("todo_list:complete:35") == %{
+             context: "todo_list",
+             action: "complete",
+             todo_id: 35
+           }
+  end
 
+  test "dispatch_action - complete", %{todo: todo} do
     dispatch_action(
       "todo_list:complete:#{todo.todo_id}",
       "Kyle",
@@ -58,9 +63,7 @@ defmodule Delega.SlackInteractiveTest do
     assert todo.completed_user_id == "Kyle"
   end
 
-  test "dispatch_action - reject" do
-    {_team, todo} = setup()
-
+  test "dispatch_action - reject", %{todo: todo} do
     dispatch_action(
       "todo_list:reject:#{todo.todo_id}",
       "Kyle",

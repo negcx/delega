@@ -6,87 +6,117 @@ defmodule Delega.Slack.Renderer do
 
   alias Delega.Todo
 
-  @doc """
-  Render a single todo with different phrasing depending on whether the todo is complete and depending on the options passed to `phrasing`.
+  defp render_channels(channels) when length(channels) > 0 do
+    "\n_" <>
+      (channels
+       |> Enum.map(&Map.get(&1, :channel_id))
+       |> Enum.map(&escape_channel/1)
+       |> Enum.join(" ")) <>
+      "_"
+  end
 
-  `phrasing` can be `:delegated_by`, `:deegated_to`, or `:none`
-  """
+  defp render_channels(channels) when length(channels) == 0 do
+    ""
+  end
+
+  def escape_channel(channel_id) do
+    "<#" <> channel_id <> ">"
+  end
+
+  defp render_assigned_text(created_user, assigned_user, created_at) do
+    created_tf = dt_to_timeframe(created_at)
+    "#{created_user.display_name} → #{assigned_user.display_name} #{created_tf}"
+  end
+
   def render_todo(
         %{
-          created_user_id: created_user_id,
+          status: "COMPLETE",
+          todo: todo,
+          created_at: created_at,
+          created_user: created_user,
+          assigned_user: assigned_user,
+          completed_user: completed_user,
+          completed_at: completed_at,
+          channels: channels
+        } = _todo,
+        _action_prefix = nil
+      ) do
+    completed_tf = dt_to_timeframe(completed_at)
+
+    channels_str = render_channels(channels)
+    assigned_str = render_assigned_text(created_user, assigned_user, created_at)
+
+    text =
+      ":white_check_mark: *#{todo}*\n" <>
+        "_Completed by #{completed_user.display_name} #{completed_tf}  ·  #{assigned_str}_" <>
+        "#{channels_str}"
+
+    [section(text)]
+  end
+
+  def render_todo(
+        %{
+          status: "REJECTED",
+          todo: todo,
+          created_at: created_at,
+          created_user: created_user,
+          assigned_user: assigned_user,
+          rejected_user: rejected_user,
+          rejected_at: rejected_at,
+          channels: channels
+        } = _todo,
+        _action_prefix = nil
+      ) do
+    rejected_tf = dt_to_timeframe(rejected_at)
+
+    channels_str = render_channels(channels)
+    assigned_str = render_assigned_text(created_user, assigned_user, created_at)
+
+    text =
+      ":no_entry_sign: *#{todo}*\n" <>
+        "_Rejected by #{rejected_user.display_name} #{rejected_tf}  ·  #{assigned_str}_" <>
+        "#{channels_str}"
+
+    [section(text)]
+  end
+
+  def render_todo(
+        %{
+          status: "NEW",
           todo: todo,
           todo_id: todo_id,
           created_at: created_at,
-          assigned_user_id: assigned_user_id,
-          status: status,
-          completed_user_id: completed_user_id,
-          completed_at: completed_at
+          created_user: created_user,
+          assigned_user: assigned_user,
+          channels: channels
         } = _todo,
-        phrasing,
-        context_user_id,
-        source
+        action_prefix
       ) do
-    timeframe = dt_to_timeframe(created_at)
+    channels_str = render_channels(channels)
+    assigned_str = render_assigned_text(created_user, assigned_user, created_at)
 
-    user_phrasing =
-      case phrasing do
-        :delegated_by ->
-          created_user_str = user_id_to_str(created_user_id, context_user_id)
-          "*#{todo}*\n_Delegated #{timeframe} by #{created_user_str}_"
+    text =
+      "*#{todo}*\n" <>
+        "_#{assigned_str}_" <>
+        "#{channels_str}"
 
-        :delegated_to ->
-          assigned_user_str = user_id_to_str(assigned_user_id, context_user_id)
-          "*#{todo}*\n_Delegated #{timeframe} to #{assigned_user_str}_"
-
-        :delegated_timeframe ->
-          "*#{todo}*\n_Delegated #{timeframe}_"
-
-        :public ->
-          created_user_str = user_id_to_str(created_user_id, context_user_id)
-          assigned_user_str = user_id_to_str(assigned_user_id, context_user_id)
-          "*#{todo}*\n_Delegated by #{created_user_str} to #{assigned_user_str} #{timeframe}_"
-      end
-
-    source_str =
-      case source do
-        :todo_list -> "todo_list"
-        :delegation_list -> "delegation_list"
-        _ -> "solo"
-      end
-
-    case status do
-      "NEW" ->
-        [
-          section(
-            user_phrasing,
-            overflow([
-              option(":white_check_mark: Done", "#{source_str}:complete:#{todo_id}"),
-              option(":no_entry_sign: Reject", "#{source_str}:reject:#{todo_id}")
-            ])
-          )
-        ]
-
-      "COMPLETE" ->
-        completed_user_str = user_id_to_str(completed_user_id, context_user_id)
-        completed_timeframe = dt_to_timeframe(completed_at)
-
-        [
-          section(
-            ":white_check_Mark: *#{todo}*\n_Delegated #{timeframe} #{user_phrasing}, completed #{
-              completed_timeframe
-            } by #{completed_user_str}_"
-          )
-        ]
-    end
+    [
+      section(
+        text,
+        overflow([
+          option(":white_check_mark: Done", "#{action_prefix}:complete:#{todo_id}"),
+          option(":no_entry_sign: Reject", "#{action_prefix}:reject:#{todo_id}")
+        ])
+      )
+    ]
   end
 
-  def render_todo_complete_msg(
-        %{todo: todo, completed_user_id: completed_user_id},
-        context_user_id
-      ) do
-    completed_user_str = user_id_to_str(completed_user_id, context_user_id)
+  def render_todo(%{status: "COMPLETE"} = todo) do
+    render_todo(todo, nil)
+  end
 
-    [section(":white_check_mark: *#{todo}*\n _Completed by #{completed_user_str}_")]
+  def render_todo(%{status: "REJECTED"} = todo) do
+    render_todo(todo, nil)
   end
 
   def render_welcome_msg() do
@@ -94,16 +124,6 @@ defmodule Delega.Slack.Renderer do
     [
       section(
         ":wave: Welcome to Delega! Easily track and delegate tasks. Type */dg help* or */delega help* for more information."
-      )
-    ]
-  end
-
-  def render_todo_reject_msg(%{todo: todo}, deleted_user_id, context_user_id) do
-    [
-      section(
-        ":no_entry_sign: *#{todo}*\n_Rejected by #{
-          user_id_to_str(deleted_user_id, context_user_id)
-        }_"
       )
     ]
   end
@@ -149,13 +169,13 @@ defmodule Delega.Slack.Renderer do
 
       _ ->
         [section(":ballot_box_with_check: *Delegated to you*")] ++
-          List.flatten(Enum.map(todos, &render_todo(&1, :delegated_by, user_id, :todo_list)))
+          List.flatten(Enum.map(todos, &render_todo(&1, "todo_list")))
     end
   end
 
-  def render_todo_reminder(todos, user_id) do
+  def render_todo_reminder(todos) do
     [section(":ballot_box_with_check: *Here are today's todos:*")] ++
-      List.flatten(Enum.map(todos, &render_todo(&1, :delegated_by, user_id, :todo_list)))
+      List.flatten(Enum.map(todos, &render_todo(&1, "todo_list")))
   end
 
   @doc """
@@ -176,7 +196,7 @@ defmodule Delega.Slack.Renderer do
             List.flatten(
               Enum.map(
                 todo_list,
-                &render_todo(&1, :delegated_timeframe, user_id, :delegation_list)
+                &render_todo(&1, "delegation_list")
               )
             )
         end)
@@ -189,10 +209,10 @@ defmodule Delega.Slack.Renderer do
 
   ## Examples
 
-      iex> Delega.Slack.Renderer.user_id_to_str("V1234567")
+      iex> Delega.Slack.Renderer.escape_user_id("V1234567")
       "<@V1234567>"
   """
-  def user_id_to_str(user_id) do
+  def escape_user_id(user_id) do
     "<@" <> user_id <> ">"
   end
 
@@ -201,16 +221,16 @@ defmodule Delega.Slack.Renderer do
 
   ## Examples
 
-      iex> Delega.Slack.Renderer.user_id_to_str("V1234567", "V1234567")
+      iex> Delega.Slack.Renderer.escape_user_id("V1234567", "V1234567")
       "you"
 
-      iex> Delega.Slack.Renderer.user_id_to_str("V1234567", "G8943876")
+      iex> Delega.Slack.Renderer.escape_user_id("V1234567", "G8943876")
       "<@V1234567>"
   """
-  def user_id_to_str(user_id, context_user_id) do
+  def escape_user_id(user_id, context_user_id) do
     case user_id == context_user_id do
       true -> "you"
-      false -> user_id_to_str(user_id)
+      false -> escape_user_id(user_id)
     end
   end
 

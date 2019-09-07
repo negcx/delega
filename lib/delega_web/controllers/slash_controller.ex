@@ -71,7 +71,7 @@ defmodule DelegaWeb.SlashController do
         "user_id" => created_user_id
       }) do
     slash(conn, %{
-      "text" => Renderer.user_id_to_str(created_user_id) <> " " <> text,
+      "text" => Renderer.escape_user_id(created_user_id) <> " " <> text,
       "command" => command,
       "team_id" => team_id,
       "user_id" => created_user_id
@@ -117,13 +117,18 @@ defmodule DelegaWeb.SlashController do
           channels
           |> Enum.map(fn channel_id ->
             TodoChannel.insert(todo.todo_id, channel_id)
+          end)
 
+          todo = Todo.get_with_assoc(todo.todo_id)
+
+          channels
+          |> Enum.map(fn channel_id ->
             Task.start(fn ->
               Slack.API.post_message(%{
                 token: access_token,
                 channel: channel_id,
                 text: "<@#{created_user_id}> has added a new todo.",
-                blocks: Renderer.render_todo(todo, :public, "", :solo)
+                blocks: Renderer.render_todo(todo, "solo")
               })
             end)
           end)
@@ -134,7 +139,7 @@ defmodule DelegaWeb.SlashController do
                 token: access_token,
                 channel: user_id,
                 text: "<@#{created_user_id}> has delegated a new todo to you.",
-                blocks: Renderer.render_todo(todo, :delegated_by, created_user_id, :solo)
+                blocks: Renderer.render_todo(todo, "solo")
               })
             end)
           end
@@ -142,7 +147,7 @@ defmodule DelegaWeb.SlashController do
           # Respond with created todo
           json(conn, %{
             "response_type" => "ephemeral",
-            "blocks" => Renderer.render_todo(todo, :delegated_to, created_user_id, :solo)
+            "blocks" => Renderer.render_todo(todo, "solo")
           })
 
         {:error, _} ->
