@@ -3,7 +3,7 @@ defmodule Delega.Slack.Interactive do
   Logic for interacting with Slack.
   """
 
-  alias Delega.Slack.Renderer
+  alias Delega.Slack.{Renderer, Commands}
   alias Delega.{Repo, Team, Todo}
 
   def send_complete_msg(
@@ -75,17 +75,7 @@ defmodule Delega.Slack.Interactive do
     })
   end
 
-  def parse_action(action_token) do
-    list = action_token |> String.split(":")
-
-    %{
-      context: list |> Enum.at(0),
-      action: list |> Enum.at(1),
-      todo_id: list |> Enum.at(2) |> String.to_integer()
-    }
-  end
-
-  def do_action("complete", todo, completed_user_id, access_token) do
+  def do_action(:complete, todo, completed_user_id, access_token) do
     if todo.status != "COMPLETE" do
       todo = todo |> Todo.complete!(completed_user_id)
 
@@ -106,7 +96,7 @@ defmodule Delega.Slack.Interactive do
     end
   end
 
-  def do_action("reject", todo, rejected_user_id, access_token) do
+  def do_action(:reject, todo, rejected_user_id, access_token) do
     if todo.status != "COMPLETE" do
       todo =
         todo
@@ -130,11 +120,9 @@ defmodule Delega.Slack.Interactive do
   end
 
   def send_todo_reminder(access_token, user_id) do
-    todos = Todo.get_assigned_todos(user_id)
+    blocks = Commands.todo_reminder(user_id)
 
-    if length(todos) > 0 do
-      blocks = Renderer.render_todo_reminder(todos)
-
+    if blocks != nil do
       Slack.API.post_message(%{
         token: access_token,
         channel: user_id,
@@ -144,27 +132,18 @@ defmodule Delega.Slack.Interactive do
     end
   end
 
-  def dispatch_action(action_token, action_user_id, team_id, response_url) do
-    %{context: context, todo_id: todo_id, action: action} = parse_action(action_token)
-
+  def dispatch_action(
+        %{action: action, callback: callback, todo_id: todo_id},
+        action_user_id,
+        team_id,
+        response_url
+      ) do
     %{access_token: access_token} = Team |> Repo.get!(team_id)
     todo = Todo.get_with_assoc(todo_id)
 
     action_blocks = do_action(action, todo, action_user_id, access_token)
 
-    context_blocks =
-      case context do
-        "todo_list" ->
-          todos = Todo.get_assigned_todos(action_user_id)
-          Renderer.render_todo_list(todos)
-
-        "delegation_list" ->
-          todos = Todo.get_created_todos(action_user_id)
-          Renderer.render_delegation_list(todos)
-
-        _ ->
-          []
-      end
+    context_blocks = Delega.Slack.ActionCallback.execute(callback)
 
     blocks = (context_blocks ++ action_blocks) |> List.flatten()
 

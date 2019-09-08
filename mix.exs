@@ -50,7 +50,8 @@ defmodule Delega.MixProject do
       {:quantum, "~> 2.3"},
       {:timex, "~> 3.0"},
       {:excoveralls, "~> 0.10", only: :test},
-      {:plug, "~> 1.8"}
+      {:plug, "~> 1.8"},
+      {:msgpax, "~> 2.2"}
     ]
   end
 

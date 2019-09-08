@@ -2,7 +2,7 @@ defmodule DelegaWeb.SlashController do
   use DelegaWeb, :controller
 
   alias Delega.{Repo, Team, Todo, UserCache, TodoChannel}
-  alias Delega.Slack.{Renderer, Interactive}
+  alias Delega.Slack.{Renderer, Interactive, Commands}
 
   import Slack.Messaging
 
@@ -29,16 +29,14 @@ defmodule DelegaWeb.SlashController do
     team_id = payload |> Map.get("team") |> Map.get("id")
     response_url = payload |> Map.get("response_url")
 
-    action_token_raw = payload |> Map.get("actions") |> hd
-    IO.inspect(action_token_raw)
-
-    action_token =
+    action =
       payload
       |> Map.get("actions")
       |> hd
       |> get_action_value()
+      |> Delega.Slack.Action.decode64()
 
-    Interactive.dispatch_action(action_token, user_id, team_id, response_url)
+    Interactive.dispatch_action(action, user_id, team_id, response_url)
 
     conn |> send_resp(200, "")
   end
@@ -54,41 +52,34 @@ defmodule DelegaWeb.SlashController do
         "text" => "todo",
         "user_id" => user_id
       }) do
-    todos = Todo.get_assigned_todos(user_id)
-
     json(conn, %{
       "response_type" => "ephemeral",
-      "blocks" => Renderer.render_todo_list(todos)
+      "blocks" => Commands.todo(user_id)
     })
   end
 
   def slash(conn, %{"text" => "todo " <> channel_token, "user_id" => user_id}) do
     channel_id = Slack.API.parse_channels(channel_token) |> hd
-    todos = Todo.get_assigned_todos(user_id, channel_id)
 
     json(conn, %{
       "response_type" => "ephemeral",
-      "blocks" => Renderer.render_todo_list(todos, channel_id)
+      "blocks" => Commands.list_todo_channel(user_id, channel_id)
     })
   end
 
   def slash(conn, %{"text" => "list", "user_id" => user_id}) do
-    todos = Todo.get_created_todos(user_id)
-
     json(conn, %{
       "response_type" => "ephemeral",
-      "blocks" => Renderer.render_delegation_list(todos)
+      "blocks" => Commands.created_list(user_id)
     })
   end
 
   def slash(conn, %{"text" => "list " <> channel_token}) do
     channel_id = Slack.API.parse_channels(channel_token) |> hd
 
-    blocks = Delega.Slack.Commands.list_channel(channel_id)
-
     json(conn, %{
       "response_type" => "ephemeral",
-      "blocks" => blocks
+      "blocks" => Commands.list_channel(channel_id)
     })
   end
 
@@ -156,7 +147,7 @@ defmodule DelegaWeb.SlashController do
                 token: access_token,
                 channel: channel_id,
                 text: "<@#{created_user_id}> has added a new todo.",
-                blocks: Renderer.render_todo(todo, "solo")
+                blocks: Renderer.render_todo(todo)
               })
             end)
           end)
@@ -167,7 +158,7 @@ defmodule DelegaWeb.SlashController do
                 token: access_token,
                 channel: user_id,
                 text: "<@#{created_user_id}> has delegated a new todo to you.",
-                blocks: Renderer.render_todo(todo, "solo")
+                blocks: Renderer.render_todo(todo)
               })
             end)
           end
@@ -175,7 +166,7 @@ defmodule DelegaWeb.SlashController do
           # Respond with created todo
           json(conn, %{
             "response_type" => "ephemeral",
-            "blocks" => Renderer.render_todo(todo, "solo")
+            "blocks" => Renderer.render_todo(todo)
           })
 
         {:error, _} ->

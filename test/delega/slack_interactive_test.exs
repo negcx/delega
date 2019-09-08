@@ -5,6 +5,7 @@ defmodule Delega.SlackInteractiveTest do
   import Delega.Slack.Interactive
 
   alias Delega.{Repo, Team, Todo, User}
+  alias Delega.Slack.Action
 
   @base_url Application.get_env(:delega, :slack_base_url)
 
@@ -41,17 +42,15 @@ defmodule Delega.SlackInteractiveTest do
     [team: team, todo: todo]
   end
 
-  test "parse_action" do
-    assert parse_action("todo_list:complete:35") == %{
-             context: "todo_list",
-             action: "complete",
-             todo_id: 35
-           }
-  end
-
   test "dispatch_action - complete", %{todo: todo} do
+    action = %Action{
+      action: :complete,
+      todo_id: todo.todo_id,
+      callback: nil
+    }
+
     dispatch_action(
-      "todo_list:complete:#{todo.todo_id}",
+      action,
       "Kyle",
       "Delega",
       @base_url <> "response_url"
@@ -64,8 +63,14 @@ defmodule Delega.SlackInteractiveTest do
   end
 
   test "dispatch_action - reject", %{todo: todo} do
+    action = %Action{
+      action: :reject,
+      todo_id: todo.todo_id,
+      callback: nil
+    }
+
     dispatch_action(
-      "todo_list:reject:#{todo.todo_id}",
+      action,
       "Kyle",
       "Delega",
       @base_url <> "response_url"

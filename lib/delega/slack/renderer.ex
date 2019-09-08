@@ -4,7 +4,7 @@ defmodule Delega.Slack.Renderer do
   """
   import Slack.Messaging
 
-  alias Delega.Todo
+  alias Delega.Slack.{Action}
 
   defp render_channels(channels) when length(channels) > 0 do
     "\n_" <>
@@ -39,7 +39,7 @@ defmodule Delega.Slack.Renderer do
           completed_at: completed_at,
           channels: channels
         } = _todo,
-        _action_prefix = nil
+        _action_callback = nil
       ) do
     completed_tf = dt_to_timeframe(completed_at)
 
@@ -65,7 +65,7 @@ defmodule Delega.Slack.Renderer do
           rejected_at: rejected_at,
           channels: channels
         } = _todo,
-        _action_prefix = nil
+        _action_callback = nil
       ) do
     rejected_tf = dt_to_timeframe(rejected_at)
 
@@ -90,10 +90,26 @@ defmodule Delega.Slack.Renderer do
           assigned_user: assigned_user,
           channels: channels
         } = _todo,
-        action_prefix
+        action_callback
       ) do
     channels_str = render_channels(channels)
     assigned_str = render_assigned_text(created_user, assigned_user, created_at)
+
+    action_complete =
+      %Action{
+        todo_id: todo_id,
+        action: :complete,
+        callback: action_callback
+      }
+      |> Action.encode64()
+
+    action_reject =
+      %Action{
+        todo_id: todo_id,
+        action: :reject,
+        callback: action_callback
+      }
+      |> Action.encode64()
 
     text =
       "*#{todo}*\n" <>
@@ -104,8 +120,8 @@ defmodule Delega.Slack.Renderer do
       section(
         text,
         overflow([
-          option(":white_check_mark: Done", "#{action_prefix}:complete:#{todo_id}"),
-          option(":no_entry_sign: Reject", "#{action_prefix}:reject:#{todo_id}")
+          option(":white_check_mark: Done", action_complete),
+          option(":no_entry_sign: Reject", action_reject)
         ])
       )
     ]
@@ -116,6 +132,10 @@ defmodule Delega.Slack.Renderer do
   end
 
   def render_todo(%{status: "REJECTED"} = todo) do
+    render_todo(todo, nil)
+  end
+
+  def render_todo(%{status: "NEW"} = todo) do
     render_todo(todo, nil)
   end
 
@@ -156,45 +176,55 @@ defmodule Delega.Slack.Renderer do
     ]
   end
 
+  def render_todos(todos, action_callback) do
+    todos
+    |> Enum.map(&render_todo(&1, action_callback))
+    |> List.flatten()
+  end
+
   @doc """
   Render the user's todo list.
   """
-  def render_todo_list(todos) when length(todos) == 0 do
+  def render_todo_list(todos, _action_callback) when length(todos) == 0 do
     [section(":white_check_mark: *You have no todos!*")]
   end
 
-  def render_todo_list(todos) when length(todos) > 0 do
+  def render_todo_list(todos, action_callback) when length(todos) > 0 do
     [section(":ballot_box_with_check: *Delegated to you*")] ++
-      List.flatten(Enum.map(todos, &render_todo(&1, "todo_list")))
+      render_todos(todos, action_callback)
   end
 
-  def render_todo_list(todos, channel_id) when length(todos) == 0 do
+  def render_todo_list(todos, channel_id, _action_callback) when length(todos) == 0 do
     [section(":white_check_mark: *You have no #{escape_channel(channel_id)} todos!*")]
   end
 
-  def render_todo_list(todos, channel_id) when length(todos) > 0 do
+  def render_todo_list(todos, channel_id, action_callback) when length(todos) > 0 do
     [section(":ballot_box_with_check: *Delegated to you for #{escape_channel(channel_id)}*")] ++
-      List.flatten(Enum.map(todos, &render_todo(&1, "todo_list")))
+      render_todos(todos, action_callback)
   end
 
   def render_channel_todos(todos, channel_id, action_callback) when length(todos) > 0 do
     [section(":ballot_box_with_check: *#{escape_channel(channel_id)} todos*")] ++
-      List.flatten(Enum.map(todos, &render_todo(&1, action_callback)))
+      render_todos(todos, action_callback)
   end
 
   def render_channel_todos(todos, channel_id, _action_callback) when length(todos) == 0 do
     [section(":white_check_mark: *#{escape_channel(channel_id)} has no todos!*")]
   end
 
-  def render_todo_reminder(todos) do
+  def render_todo_reminder(todos, _action_callback) when length(todos) == 0 do
+    nil
+  end
+
+  def render_todo_reminder(todos, action_callback) when length(todos) > 0 do
     [section(":ballot_box_with_check: *Here are today's todos:*")] ++
-      List.flatten(Enum.map(todos, &render_todo(&1, "todo_list")))
+      render_todos(todos, action_callback)
   end
 
   @doc """
   Render a list of todos delegated by the user, organized by the user they are assigned to.
   """
-  def render_delegation_list(todos) when length(todos) > 0 do
+  def render_delegation_list(todos, action_callback) when length(todos) > 0 do
     todos
     |> Enum.group_by(&Map.get(&1, :assigned_user))
     |> Enum.map(fn {user, todo_list} ->
@@ -202,14 +232,14 @@ defmodule Delega.Slack.Renderer do
         List.flatten(
           Enum.map(
             todo_list,
-            &render_todo(&1, "delegation_list")
+            &render_todo(&1, action_callback)
           )
         )
     end)
     |> List.flatten()
   end
 
-  def render_delegation_list(todos) when length(todos) == 0 do
+  def render_delegation_list(todos, _action_callback) when length(todos) == 0 do
     [section(":white_check_mark: *You have no outstanding delegations!*")]
   end
 
