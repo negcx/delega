@@ -130,7 +130,7 @@ defmodule Delega.Slack.Interactive do
   end
 
   def send_todo_reminder(access_token, user_id) do
-    todos = Todo.get_todo_list(user_id)
+    todos = Todo.get_assigned_todos(user_id)
 
     if length(todos) > 0 do
       blocks = Renderer.render_todo_reminder(todos)
@@ -154,9 +154,16 @@ defmodule Delega.Slack.Interactive do
 
     context_blocks =
       case context do
-        "todo_list" -> Renderer.render_todo_list(action_user_id)
-        "delegation_list" -> Renderer.render_delegation_list(action_user_id)
-        _ -> []
+        "todo_list" ->
+          todos = Todo.get_assigned_todos(action_user_id)
+          Renderer.render_todo_list(todos)
+
+        "delegation_list" ->
+          todos = Todo.get_created_todos(action_user_id)
+          Renderer.render_delegation_list(todos)
+
+        _ ->
+          []
       end
 
     blocks = (context_blocks ++ action_blocks) |> List.flatten()

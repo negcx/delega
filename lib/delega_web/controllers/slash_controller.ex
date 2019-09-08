@@ -29,6 +29,9 @@ defmodule DelegaWeb.SlashController do
     team_id = payload |> Map.get("team") |> Map.get("id")
     response_url = payload |> Map.get("response_url")
 
+    action_token_raw = payload |> Map.get("actions") |> hd
+    IO.inspect(action_token_raw)
+
     action_token =
       payload
       |> Map.get("actions")
@@ -40,16 +43,6 @@ defmodule DelegaWeb.SlashController do
     conn |> send_resp(200, "")
   end
 
-  def slash(conn, %{
-        "text" => "todo",
-        "user_id" => user_id
-      }) do
-    json(conn, %{
-      "response_type" => "ephemeral",
-      "blocks" => Renderer.render_todo_list(user_id)
-    })
-  end
-
   def slash(conn, %{"text" => "help"}) do
     json(conn, %{
       "response_type" => "ephemeral",
@@ -57,10 +50,45 @@ defmodule DelegaWeb.SlashController do
     })
   end
 
-  def slash(conn, %{"text" => "list", "user_id" => user_id}) do
+  def slash(conn, %{
+        "text" => "todo",
+        "user_id" => user_id
+      }) do
+    todos = Todo.get_assigned_todos(user_id)
+
     json(conn, %{
       "response_type" => "ephemeral",
-      "blocks" => Renderer.render_delegation_list(user_id)
+      "blocks" => Renderer.render_todo_list(todos)
+    })
+  end
+
+  def slash(conn, %{"text" => "todo " <> channel_token, "user_id" => user_id}) do
+    channel_id = Slack.API.parse_channels(channel_token) |> hd
+    todos = Todo.get_assigned_todos(user_id, channel_id)
+
+    json(conn, %{
+      "response_type" => "ephemeral",
+      "blocks" => Renderer.render_todo_list(todos, channel_id)
+    })
+  end
+
+  def slash(conn, %{"text" => "list", "user_id" => user_id}) do
+    todos = Todo.get_created_todos(user_id)
+
+    json(conn, %{
+      "response_type" => "ephemeral",
+      "blocks" => Renderer.render_delegation_list(todos)
+    })
+  end
+
+  def slash(conn, %{"text" => "list " <> channel_token}) do
+    channel_id = Slack.API.parse_channels(channel_token) |> hd
+
+    blocks = Delega.Slack.Commands.list_channel(channel_id)
+
+    json(conn, %{
+      "response_type" => "ephemeral",
+      "blocks" => blocks
     })
   end
 
@@ -96,6 +124,9 @@ defmodule DelegaWeb.SlashController do
       text
       |> String.trim_leading(user_token <> " ")
 
+    channels = Slack.API.parse_channels(todo_msg)
+    todo_msg = Slack.API.trim_channels(todo_msg)
+
     %{access_token: access_token} = team = Repo.get!(Team, team_id)
 
     user_id_valid? = UserCache.validate_and_welcome(user_id, team)
@@ -111,9 +142,6 @@ defmodule DelegaWeb.SlashController do
 
       case Repo.insert(todo, returning: true) do
         {:ok, todo} ->
-          # Check to see if there are any channels
-          channels = Slack.API.parse_channels(todo_msg)
-
           channels
           |> Enum.map(fn channel_id ->
             TodoChannel.insert(todo.todo_id, channel_id)

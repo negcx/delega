@@ -6,6 +6,8 @@ defmodule Delega.Todo do
 
   import Ecto.Query, only: [from: 2]
 
+  @preload [:completed_user, :created_user, :assigned_user, :rejected_user, :channels]
+
   @primary_key {:todo_id, :id, autogenerate: true}
   schema "todo" do
     belongs_to :team, Delega.Team, references: :team_id, type: :string
@@ -51,29 +53,63 @@ defmodule Delega.Todo do
 
   def get_with_assoc(todo_id) do
     from(t in Todo,
-      preload: [:completed_user, :created_user, :assigned_user, :rejected_user, :channels]
+      preload: ^@preload
     )
     |> Repo.get(todo_id)
   end
 
-  def get_todo_list(user_id) do
+  def get_channel_todos(channel_id) do
     Repo.all(
       from t in Todo,
-        preload: [:completed_user, :created_user, :assigned_user, :rejected_user, :channels],
+        join: c in assoc(t, :channels),
         where:
-          t.assigned_user_id == ^user_id and
+          c.channel_id == ^channel_id and
+            t.status == "NEW",
+        preload: ^@preload
+    )
+  end
+
+  def get_assigned_todos(assigned_user_id) do
+    Repo.all(
+      from t in Todo,
+        preload: ^@preload,
+        where:
+          t.assigned_user_id == ^assigned_user_id and
             t.status == "NEW"
     )
   end
 
-  def get_delegation_list(user_id) do
+  def get_assigned_todos(assigned_user_id, channel_id) do
     Repo.all(
       from t in Todo,
-        preload: [:completed_user, :created_user, :assigned_user, :rejected_user, :channels],
+        join: c in assoc(t, :channels),
         where:
-          t.status == "NEW" and
-            t.created_user_id == ^user_id and
-            t.assigned_user_id != ^user_id
+          t.assigned_user_id == ^assigned_user_id and
+            c.channel_id == ^channel_id and
+            t.status == "NEW",
+        preload: ^@preload
+    )
+  end
+
+  def get_created_todos(created_user_id) do
+    Repo.all(
+      from t in Todo,
+        preload: ^@preload,
+        where:
+          t.created_user_id == ^created_user_id and
+            t.status == "NEW"
+    )
+  end
+
+  def get_created_todos(created_user_id, channel_id) do
+    Repo.all(
+      from t in Todo,
+        join: c in assoc(t, :channels),
+        where:
+          t.created_user_id == ^created_user_id and
+            c.channel_id == ^channel_id and
+            t.status == "NEW",
+        preload: ^@preload
     )
   end
 end

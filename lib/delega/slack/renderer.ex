@@ -120,10 +120,9 @@ defmodule Delega.Slack.Renderer do
   end
 
   def render_welcome_msg() do
-    # TODO
     [
       section(
-        ":wave: Welcome to Delega! Easily track and delegate tasks. Type */dg help* or */delega help* for more information."
+        ":wave: Welcome to Delega! Easily track and delegate tasks without leaving Slack. Type */dg help* or */delega help* for more information."
       )
     ]
   end
@@ -160,17 +159,31 @@ defmodule Delega.Slack.Renderer do
   @doc """
   Render the user's todo list.
   """
-  def render_todo_list(user_id) do
-    todos = Todo.get_todo_list(user_id)
+  def render_todo_list(todos) when length(todos) == 0 do
+    [section(":white_check_mark: *You have no todos!*")]
+  end
 
-    case length(todos) do
-      0 ->
-        [section(":white_check_mark: *You have no todos!*")]
+  def render_todo_list(todos) when length(todos) > 0 do
+    [section(":ballot_box_with_check: *Delegated to you*")] ++
+      List.flatten(Enum.map(todos, &render_todo(&1, "todo_list")))
+  end
 
-      _ ->
-        [section(":ballot_box_with_check: *Delegated to you*")] ++
-          List.flatten(Enum.map(todos, &render_todo(&1, "todo_list")))
-    end
+  def render_todo_list(todos, channel_id) when length(todos) == 0 do
+    [section(":white_check_mark: *You have no #{escape_channel(channel_id)} todos!*")]
+  end
+
+  def render_todo_list(todos, channel_id) when length(todos) > 0 do
+    [section(":ballot_box_with_check: *Delegated to you for #{escape_channel(channel_id)}*")] ++
+      List.flatten(Enum.map(todos, &render_todo(&1, "todo_list")))
+  end
+
+  def render_channel_todos(todos, channel_id, action_callback) when length(todos) > 0 do
+    [section(":ballot_box_with_check: *#{escape_channel(channel_id)} todos*")] ++
+      List.flatten(Enum.map(todos, &render_todo(&1, action_callback)))
+  end
+
+  def render_channel_todos(todos, channel_id, _action_callback) when length(todos) == 0 do
+    [section(":white_check_mark: *#{escape_channel(channel_id)} has no todos!*")]
   end
 
   def render_todo_reminder(todos) do
@@ -181,27 +194,23 @@ defmodule Delega.Slack.Renderer do
   @doc """
   Render a list of todos delegated by the user, organized by the user they are assigned to.
   """
-  def render_delegation_list(user_id) do
-    todos = Todo.get_delegation_list(user_id)
+  def render_delegation_list(todos) when length(todos) > 0 do
+    todos
+    |> Enum.group_by(&Map.get(&1, :assigned_user))
+    |> Enum.map(fn {user, todo_list} ->
+      [section(":ballot_box_with_check: *Delegated to #{user.display_name}*")] ++
+        List.flatten(
+          Enum.map(
+            todo_list,
+            &render_todo(&1, "delegation_list")
+          )
+        )
+    end)
+    |> List.flatten()
+  end
 
-    case length(todos) do
-      0 ->
-        [section(":white_check_mark: *You have no outstanding delegations!*")]
-
-      _ ->
-        todos
-        |> Enum.group_by(&Map.get(&1, :assigned_user_id))
-        |> Enum.map(fn {user_id, todo_list} ->
-          [section(":ballot_box_with_check: *Delegated to <@#{user_id}>*")] ++
-            List.flatten(
-              Enum.map(
-                todo_list,
-                &render_todo(&1, "delegation_list")
-              )
-            )
-        end)
-        |> List.flatten()
-    end
+  def render_delegation_list(todos) when length(todos) == 0 do
+    [section(":white_check_mark: *You have no outstanding delegations!*")]
   end
 
   @doc """
