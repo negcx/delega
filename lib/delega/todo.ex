@@ -97,7 +97,8 @@ defmodule Delega.Todo do
         preload: ^@preload,
         where:
           t.created_user_id == ^created_user_id and
-            t.status == "NEW"
+            t.status == "NEW" and
+            t.assigned_user_id != ^created_user_id
     )
   end
 
