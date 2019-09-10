@@ -65,6 +65,7 @@ defmodule Delega.Todo do
         where:
           c.channel_id == ^channel_id and
             t.status == "NEW",
+        order_by: t.created_at,
         preload: ^@preload
     )
   end
@@ -75,7 +76,8 @@ defmodule Delega.Todo do
         preload: ^@preload,
         where:
           t.assigned_user_id == ^assigned_user_id and
-            t.status == "NEW"
+            t.status == "NEW",
+        order_by: t.created_at
     )
   end
 
@@ -87,6 +89,7 @@ defmodule Delega.Todo do
           t.assigned_user_id == ^assigned_user_id and
             c.channel_id == ^channel_id and
             t.status == "NEW",
+        order_by: t.created_at,
         preload: ^@preload
     )
   end
@@ -98,7 +101,8 @@ defmodule Delega.Todo do
         where:
           t.created_user_id == ^created_user_id and
             t.status == "NEW" and
-            t.assigned_user_id != ^created_user_id
+            t.assigned_user_id != ^created_user_id,
+        order_by: t.created_at
     )
   end
 
@@ -110,7 +114,8 @@ defmodule Delega.Todo do
           t.created_user_id == ^created_user_id and
             c.channel_id == ^channel_id and
             t.status == "NEW",
-        preload: ^@preload
+        preload: ^@preload,
+        order_by: t.created_at
     )
   end
 end
