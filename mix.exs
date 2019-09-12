@@ -51,7 +51,8 @@ defmodule Delega.MixProject do
       {:timex, "~> 3.0"},
       {:excoveralls, "~> 0.10", only: :test},
       {:plug, "~> 1.8"},
-      {:msgpax, "~> 2.2"}
+      {:msgpax, "~> 2.2"},
+      {:observer_cli, "~> 1.5"}
     ]
   end
 
