@@ -50,8 +50,7 @@ defmodule Delega.MixProject do
       {:excoveralls, "~> 0.10", only: :test},
       {:plug, "~> 1.8"},
       {:msgpax, "~> 2.2"},
-      {:observer_cli, "~> 1.5"},
-      {:ok_jose, "~> 3.0"}
+      {:observer_cli, "~> 1.5"}
     ]
   end
 
