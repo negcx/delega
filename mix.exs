@@ -47,12 +47,11 @@ defmodule Delega.MixProject do
       {:plug_cowboy, "~> 2.0"},
       {:httpoison, "~> 1.5"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
-      {:quantum, "~> 2.3"},
-      {:timex, "~> 3.0"},
       {:excoveralls, "~> 0.10", only: :test},
       {:plug, "~> 1.8"},
       {:msgpax, "~> 2.2"},
-      {:observer_cli, "~> 1.5"}
+      {:observer_cli, "~> 1.5"},
+      {:ok_jose, "~> 3.0"}
     ]
   end
 
