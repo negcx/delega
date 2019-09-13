@@ -1,2 +1,2 @@
-web: iex --name observer@delega.app --cookie $COOKIE -S mix phx.server
+web: elixir --name observer@delega.app --cookie $COOKIE -S mix phx.server
 release: ./sql/migrate.sh
