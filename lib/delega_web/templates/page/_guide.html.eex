@@ -1,4 +1,4 @@
-<div class="mx-auto max-w-sm m-16">
+<div class="mx-auto max-w-md m-16">
     <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega</span> <span class="text-blue-700">@Patrick</span> Delegate a todo to Patrick</h4>
 
     <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega me</span> Assign a todo to yourself</h4>
