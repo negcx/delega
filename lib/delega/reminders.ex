@@ -30,15 +30,25 @@ defmodule Delega.Reminders do
   end
 
   def reminder?(now, reminder_time, tz_offset, tolerance) do
-    now_tz = Time.add(now, tz_offset)
+    now_tz = DateTime.add(now, tz_offset)
 
-    diff = Time.diff(now_tz, reminder_time)
+    case Date.day_of_week(now_tz) do
+      6 ->
+        false
 
-    diff < tolerance and diff >= 0
+      7 ->
+        false
+
+      _ ->
+        now_tz = DateTime.to_time(now_tz)
+        diff = Time.diff(now_tz, reminder_time)
+
+        diff < tolerance and diff >= 0
+    end
   end
 
   def send_reminders(reminder_hour, reminder_minute) do
-    now = Time.utc_now()
+    now = DateTime.utc_now()
     {:ok, reminder_time} = Time.new(reminder_hour, reminder_minute, 0, 0)
 
     users_with_todos =
