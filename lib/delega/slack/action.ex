@@ -18,6 +18,7 @@ defmodule Delega.Slack.Action do
     case action_atom do
       :complete -> 1
       :reject -> 2
+      :assign -> 3
     end
   end
 
@@ -25,6 +26,7 @@ defmodule Delega.Slack.Action do
     case action_id do
       1 -> :complete
       2 -> :reject
+      3 -> :assign
     end
   end
 

@@ -2,11 +2,18 @@ defmodule Delega.Todo do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias Delega.{Todo, Repo}
+  alias Delega.{Todo, Repo, TodoAssignment}
 
   import Ecto.Query, only: [from: 2]
 
-  @preload [:completed_user, :created_user, :assigned_user, :rejected_user, :channels]
+  @preload [
+    :completed_user,
+    :created_user,
+    :rejected_user,
+    :channels,
+    [assignments: from(TodoAssignment, order_by: [:created_at], preload: :assigned_to_user)],
+    :assigned_user
+  ]
 
   @primary_key {:todo_id, :id, autogenerate: true}
   schema "todo" do
@@ -23,6 +30,8 @@ defmodule Delega.Todo do
     has_one :assigned_user, Delega.User, references: :assigned_user_id, foreign_key: :user_id
     has_one :completed_user, Delega.User, references: :completed_user_id, foreign_key: :user_id
     has_one :rejected_user, Delega.User, references: :rejected_user_id, foreign_key: :user_id
+
+    has_many :assignments, Delega.TodoAssignment, foreign_key: :todo_id
 
     field :todo, :string
     field :status, :string
@@ -49,6 +58,20 @@ defmodule Delega.Todo do
   def reject!(todo, rejected_user_id) do
     todo = Ecto.Changeset.change(todo, status: "REJECTED", rejected_user_id: rejected_user_id)
     Delega.Repo.update!(todo, returning: true)
+  end
+
+  def reassign!(todo, by_user_id, to_user_id) do
+    %TodoAssignment{assigned_to_user_id: to_user_id, assigned_by_user_id: by_user_id}
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.put_assoc(:todo, todo)
+    |> Repo.insert!()
+
+    todo
+    |> Ecto.Changeset.change(
+      status: "NEW",
+      assigned_user_id: to_user_id
+    )
+    |> Repo.update!()
   end
 
   def get_with_assoc(todo_id) do

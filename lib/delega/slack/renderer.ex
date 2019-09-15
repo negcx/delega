@@ -23,9 +23,15 @@ defmodule Delega.Slack.Renderer do
     "<#" <> channel_id <> ">"
   end
 
-  defp render_assigned_text(created_user, assigned_user, created_at) do
+  defp render_assigned_text(created_user, assignments, created_at) do
     created_tf = dt_to_timeframe(created_at)
-    "#{created_user.display_name} → #{assigned_user.display_name} #{created_tf}"
+
+    assignment_chain_str =
+      ([created_user.display_name] ++
+         Enum.map(assignments, & &1.assigned_to_user.display_name))
+      |> Enum.join(" → ")
+
+    assignment_chain_str <> "  ·  " <> created_tf
   end
 
   def render_todo(
@@ -34,7 +40,7 @@ defmodule Delega.Slack.Renderer do
           todo: todo,
           created_at: created_at,
           created_user: created_user,
-          assigned_user: assigned_user,
+          assignments: assignments,
           completed_user: completed_user,
           completed_at: completed_at,
           channels: channels
@@ -44,7 +50,7 @@ defmodule Delega.Slack.Renderer do
     completed_tf = dt_to_timeframe(completed_at)
 
     channels_str = render_channels(channels)
-    assigned_str = render_assigned_text(created_user, assigned_user, created_at)
+    assigned_str = render_assigned_text(created_user, assignments, created_at)
 
     text =
       ":white_check_mark: *#{todo}*\n" <>
@@ -60,7 +66,7 @@ defmodule Delega.Slack.Renderer do
           todo: todo,
           created_at: created_at,
           created_user: created_user,
-          assigned_user: assigned_user,
+          assignments: assignments,
           rejected_user: rejected_user,
           rejected_at: rejected_at,
           channels: channels
@@ -70,7 +76,7 @@ defmodule Delega.Slack.Renderer do
     rejected_tf = dt_to_timeframe(rejected_at)
 
     channels_str = render_channels(channels)
-    assigned_str = render_assigned_text(created_user, assigned_user, created_at)
+    assigned_str = render_assigned_text(created_user, assignments, created_at)
 
     text =
       ":no_entry_sign: *#{todo}*\n" <>
@@ -87,13 +93,13 @@ defmodule Delega.Slack.Renderer do
           todo_id: todo_id,
           created_at: created_at,
           created_user: created_user,
-          assigned_user: assigned_user,
+          assignments: assignments,
           channels: channels
         } = _todo,
         action_callback
       ) do
     channels_str = render_channels(channels)
-    assigned_str = render_assigned_text(created_user, assigned_user, created_at)
+    assigned_str = render_assigned_text(created_user, assignments, created_at)
 
     action_complete =
       %Action{
@@ -111,6 +117,14 @@ defmodule Delega.Slack.Renderer do
       }
       |> Action.encode64()
 
+    action_assign =
+      %Action{
+        todo_id: todo_id,
+        action: :assign,
+        callback: action_callback
+      }
+      |> Action.encode64()
+
     text =
       "*#{todo}*\n" <>
         "_#{assigned_str}_" <>
@@ -121,6 +135,7 @@ defmodule Delega.Slack.Renderer do
         text,
         overflow([
           option(":white_check_mark: Done", action_complete),
+          option(":arrow_right: Assign", action_assign),
           option(":no_entry_sign: Reject", action_reject)
         ])
       )

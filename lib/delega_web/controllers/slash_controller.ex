@@ -1,7 +1,7 @@
 defmodule DelegaWeb.SlashController do
   use DelegaWeb, :controller
 
-  alias Delega.{Repo, Team, Todo, UserCache, TodoChannel}
+  alias Delega.{Repo, Team, Todo, UserCache, TodoChannel, TodoAssignment}
   alias Delega.Slack.{Renderer, Interactive, Commands}
 
   import Slack.Messaging
@@ -15,28 +15,12 @@ defmodule DelegaWeb.SlashController do
     |> hd
   end
 
-  def get_action_value(action) do
-    case action do
-      %{"type" => "overflow"} -> Map.get(action, "selected_option") |> Map.get("value")
-      %{"type" => "button"} -> Map.get(action, "value")
-    end
-  end
-
   def interactivity(conn, params) do
     payload = Jason.decode!(Map.get(params, "payload"))
 
-    user_id = payload |> Map.get("user") |> Map.get("id")
-    team_id = payload |> Map.get("team") |> Map.get("id")
-    response_url = payload |> Map.get("response_url")
+    IO.inspect(payload)
 
-    action =
-      payload
-      |> Map.get("actions")
-      |> hd
-      |> get_action_value()
-      |> Delega.Slack.Action.decode64()
-
-    Interactive.dispatch_action(action, user_id, team_id, response_url)
+    Interactive.process_interaction(payload)
 
     conn |> send_resp(200, "")
   end
@@ -138,6 +122,16 @@ defmodule DelegaWeb.SlashController do
             TodoChannel.insert(todo.todo_id, channel_id)
           end)
 
+          # Add initial assignments
+          %TodoAssignment{
+            assigned_by_user_id: created_user_id,
+            assigned_to_user_id: user_id
+          }
+          |> Ecto.Changeset.change()
+          |> Ecto.Changeset.put_assoc(:todo, todo)
+          |> Repo.insert!()
+
+          # Get Todo with all associations
           todo = Todo.get_with_assoc(todo.todo_id)
 
           channels

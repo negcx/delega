@@ -1,6 +1,31 @@
 defmodule Slack.API do
   @base_url Application.get_env(:delega, :slack_base_url)
 
+  def dialog_open(access_token, trigger_id, dialog) do
+    HTTPoison.post!(
+      @base_url <> "dialog.open",
+      Jason.encode!(%{
+        "trigger_id" => trigger_id,
+        "dialog" => dialog
+      }),
+      [
+        {"Authorization", "Bearer " <> access_token},
+        {"Content-Type", "application/json"}
+      ]
+    )
+  end
+
+  def simple_response(response_url, message) do
+    HTTPoison.post!(
+      response_url,
+      Jason.encode!(%{
+        "response_type" => "ephemeral",
+        "blocks" => [Slack.Messaging.section(message)]
+      }),
+      [{"Content-type", "application/json"}]
+    )
+  end
+
   def post_message(%{token: token, channel: channel, text: text, blocks: blocks}) do
     HTTPoison.post!(
       @base_url <> "chat.postMessage",
