@@ -14,4 +14,8 @@ defmodule DelegaWeb.PageController do
   def oauth_success(conn, _params) do
     render(conn, "oauth_success.html")
   end
+
+  def privacy(conn, _params) do
+    render(conn, "privacy.html")
+  end
 end

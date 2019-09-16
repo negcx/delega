@@ -167,7 +167,8 @@ defmodule Delega.Slack.Renderer do
       markdown("*Delegate a task*\n`/dg @Username Your task description`\n"),
       markdown("*List your todos*\n`/dg todo`\n"),
       markdown("*List tasks you delegated*\n`/dg list`\n"),
-      markdown("*Help*\n`/dg help`\n")
+      markdown("*Help*\n`/dg help`\n"),
+      markdown("*Feedback*\n`/dg feedback share your feedback`\n")
     ])
   end
 

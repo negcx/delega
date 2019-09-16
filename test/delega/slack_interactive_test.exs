@@ -53,7 +53,8 @@ defmodule Delega.SlackInteractiveTest do
       action,
       "Kyle",
       "Delega",
-      @base_url <> "response_url"
+      @base_url <> "response_url",
+      "trigger"
     )
 
     todo = Repo.get!(Todo, todo.todo_id)
@@ -73,7 +74,8 @@ defmodule Delega.SlackInteractiveTest do
       action,
       "Kyle",
       "Delega",
-      @base_url <> "response_url"
+      @base_url <> "response_url",
+      "trigger"
     )
 
     todo = Repo.get!(Todo, todo.todo_id)

@@ -8,4 +8,6 @@
     <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega list</span> <span class="text-gray-500">todos you've delegated</span></h4>
 
     <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega help</span> <span class="text-gray-500">show the guide</span></h4>
+
+    <h4 class="font-mono mb-3 text-gray-700 text-sm sm:text-base"><span class="font-bold">/delega feedback</span> <span class="text-gray-500">share your feedback</span></h4>
 </div>

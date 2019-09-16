@@ -46,6 +46,13 @@ defmodule Delega.Slack.Commands do
     Renderer.render_delegation_list(todos, callback)
   end
 
+  def feedback(user_id, feedback) do
+    %Delega.Feedback{user_id: user_id, feedback: feedback}
+    |> Delega.Repo.insert!()
+
+    [Slack.Messaging.section("Thank you for your feedback!")]
+  end
+
   def todo_reminder(user_id) do
     callback = %ActionCallback{
       function: :todo_reminder,

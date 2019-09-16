@@ -32,6 +32,13 @@ defmodule DelegaWeb.SlashController do
     })
   end
 
+  def slash(conn, %{"text" => "feedback " <> feedback, "user_id" => user_id}) do
+    json(conn, %{
+      "response_type" => "ephemeral",
+      "blocks" => Commands.feedback(user_id, feedback)
+    })
+  end
+
   def slash(conn, %{
         "text" => "todo",
         "user_id" => user_id

@@ -11,7 +11,7 @@
   <body class="bg-gray-100">
     <header>
       <div class="text-center mt-8">
-          <img class="inline-block" src='<%= Routes.static_path(@conn, "/images/delega-logo.svg")%>' width="200" />
+          <a href="<%= DelegaWeb.Router.Helpers.page_path(DelegaWeb.Endpoint, :index) %>"><img class="inline-block" src='<%= Routes.static_path(@conn, "/images/delega-logo.svg")%>' width="200" /></a>
       </div>
     </header>
     <main role="main">
@@ -44,6 +44,8 @@
       </div> %>
 
       <p class="text-gray-500 font-light mb-2 text-sm text-center">Copyright &copy; 2019<br/>All rights reserved</p>
+
+      <p class="text-gray-500 font-light mt-4 text-sm text-center"><a href="<%= DelegaWeb.Router.Helpers.page_path(DelegaWeb.Endpoint, :privacy) %>">Privacy Policy</a></p>
     </footer>
   </body>
 </html>

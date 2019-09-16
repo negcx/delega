@@ -1,10 +1,9 @@
 defmodule Delega.TodoAssignment do
   use Ecto.Schema
-  import Ecto.Changeset
 
   @primary_key {:todo_assignment_id, :id, autogenerate: true}
   schema "todo_assignment" do
-    belongs_to :todo, Delega.Todo, references: :todo_id, type: :integer
+    belongs_to :todo, Delega.Todo, references: :todo_id
 
     field :assigned_to_user_id, :string
     field :assigned_by_user_id, :string

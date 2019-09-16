@@ -1,0 +1,6 @@
+<div class="min-w-screen">
+    <div class="px-6 py-6 sm:px-12 sm:py-8 m-auto container max-w-3xl">
+        <h2 class="text-3xl sm:text-6xl text-gray-900 text-center leading-none font-light mb-10">Privacy Policy</h2>
+        <p>Delega only stores your display name from Slack. Delega does not collect, log, or store any other personal information.</p>
+    </div>
+</div>

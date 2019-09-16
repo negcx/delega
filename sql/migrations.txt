@@ -5,3 +5,5 @@
 20190907_user_names.sql
 20190908_user_display_name_not_null.sql
 20190915_todo_assignment.sql
+20190915_todo_assignment_spelling.sql
+20190915_feedback.sql
