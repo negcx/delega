@@ -6,15 +6,6 @@ defmodule Delega.Todo do
 
   import Ecto.Query, only: [from: 2]
 
-  @preload [
-    :completed_user,
-    :created_user,
-    :rejected_user,
-    :channels,
-    [assignments: from(TodoAssignment, order_by: [:created_at], preload: :assigned_to_user)],
-    :assigned_user
-  ]
-
   @primary_key {:todo_id, :id, autogenerate: true}
   schema "todo" do
     belongs_to :team, Delega.Team, references: :team_id, type: :string
@@ -42,6 +33,15 @@ defmodule Delega.Todo do
     field :created_at, :utc_datetime_usec
     field :updated_at, :utc_datetime_usec
   end
+
+  @preload [
+    :completed_user,
+    :created_user,
+    :rejected_user,
+    :channels,
+    [assignments: from(TodoAssignment, order_by: [:created_at], preload: :assigned_to_user)],
+    :assigned_user
+  ]
 
   def changeset(cs, params \\ %{}) do
     cs

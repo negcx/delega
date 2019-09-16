@@ -4,7 +4,7 @@ defmodule Delega.Slack.Interactive do
   """
 
   alias Delega.Slack.{Renderer, Commands}
-  alias Delega.{Repo, Team, Todo, TodoAssignment, User}
+  alias Delega.{Repo, Team, Todo, User}
 
   def send_complete_msg(
         to_user_id,
@@ -202,7 +202,7 @@ defmodule Delega.Slack.Interactive do
           "team" => %{"id" => team_id},
           "submission" => %{"assign_to" => assign_to_user_id},
           "response_url" => response_url
-        } = payload
+        } = _payload
       ) do
     %{"todo_id" => todo_id} =
       state
