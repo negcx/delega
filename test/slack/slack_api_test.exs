@@ -28,5 +28,11 @@ defmodule Slack.SlackAPITest do
 
       assert Slack.API.trim_channels(text) == "do some awesome things <#CMAQ7M3HU|general> "
     end
+
+    test "Channel with a dash" do
+      text = "<#CM8KWJ1L5|blue-ribbon> do some awesome things"
+
+      assert Slack.API.trim_channels(text) == "do some awesome things"
+    end
   end
 end

@@ -82,7 +82,7 @@ defmodule Slack.API do
   end
 
   def trim_channels(text) do
-    channels_re = ~r/^((\s+)?<#([A-Z0-9]+)\|([A-Za-z0-9]+)>(\s+)?)+/
+    channels_re = ~r/^((\s+)?<#([A-Z0-9]+)\|([-A-Za-z0-9]+)>(\s+)?)+/
 
     channels_re
     |> Regex.replace(text, "")
