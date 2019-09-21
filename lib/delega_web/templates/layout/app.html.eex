@@ -42,10 +42,13 @@
           </div>
         </div>
       </div> %>
+    <div class="flex flex-col sm:flex-row justify-center items-center">
+      <p class="my-3 text-gray-500 font-light mb-2 text-sm text-center content-center">Copyright &copy; 2019</p>
 
-      <p class="text-gray-500 font-light mb-2 text-sm text-center">Copyright &copy; 2019<br/>All rights reserved</p>
+      <p class="mx-10 my-3  text-gray-700 font-light mb-2 text-sm text-center"><span class="font-bold">Need help?</span><br/><a href="mailto:support@delega.app">support@delega.app</a></p>
 
-      <p class="text-gray-500 font-light mt-4 text-sm text-center"><a href="<%= DelegaWeb.Router.Helpers.page_path(DelegaWeb.Endpoint, :privacy) %>">Privacy Policy</a></p>
+      <p class="my-3 text-gray-500 font-light text-sm text-center"><a href="<%= DelegaWeb.Router.Helpers.page_path(DelegaWeb.Endpoint, :privacy) %>">Privacy Policy</a></p>
+    </div>
     </footer>
   </body>
 </html>
