@@ -13,6 +13,18 @@ defmodule Delega.MockSlackServer do
     conn |> send_resp(200, "")
   end
 
+  post "/im.open" do
+    conn
+    |> send_resp(
+      200,
+      Jason.encode!(%{
+        "channel" => %{
+          "id" => "Some ID"
+        }
+      })
+    )
+  end
+
   post "/oauth.access" do
     conn |> send_resp(200, "")
   end

@@ -7,3 +7,5 @@
 20190915_todo_assignment.sql
 20190915_todo_assignment_spelling.sql
 20190915_feedback.sql
+20190923_botuser.sql
+20190923_userchannel.sql

@@ -10,7 +10,9 @@ defmodule Delega.SlackInteractiveTest do
   @base_url Application.get_env(:delega, :slack_base_url)
 
   setup do
-    team = %Team{team_id: "Delega", access_token: "a big secret"} |> Repo.insert!(returning: true)
+    team =
+      %Team{team_id: "Delega", access_token: "a big secret", bot_access_token: "blah"}
+      |> Repo.insert!(returning: true)
 
     %User{
       user_id: "Kyle",

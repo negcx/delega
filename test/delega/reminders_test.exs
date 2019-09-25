@@ -1,5 +1,5 @@
 defmodule Delega.RemindersTest do
-  use ExUnit.Case, async: true
+  use Delega.DataCase, async: true
 
   import Delega.Reminders
 
@@ -17,5 +17,9 @@ defmodule Delega.RemindersTest do
 
       assert ms == 28 * 60 * 1000
     end
+  end
+
+  test "Try to send reminders" do
+    send_reminders(9, 0)
   end
 end

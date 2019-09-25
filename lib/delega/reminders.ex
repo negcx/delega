@@ -1,7 +1,7 @@
 defmodule Delega.Reminders do
   use GenServer
 
-  alias Delega.{Repo, Team, Todo, User}
+  alias Delega.{Repo, Todo, User}
 
   import Ecto.Query, only: [from: 2]
 
@@ -51,28 +51,18 @@ defmodule Delega.Reminders do
     now = DateTime.utc_now()
     {:ok, reminder_time} = Time.new(reminder_hour, reminder_minute, 0, 0)
 
-    users_with_todos =
-      from(user in User,
-        distinct: true,
-        join: todo in Todo,
-        on: todo.assigned_user_id == user.user_id,
-        join: team in Team,
-        on: todo.team_id == team.team_id,
-        where: todo.status == "NEW",
-        select: %{
-          team_id: team.team_id,
-          access_token: team.access_token,
-          user_id: todo.assigned_user_id,
-          tz_offset: user.tz_offset
-        }
-      )
-      |> Repo.all()
-
-    users_with_todos
+    from(user in User,
+      distinct: true,
+      join: todo in Todo,
+      on: todo.assigned_user_id == user.user_id,
+      where: todo.status == "NEW",
+      preload: [:team]
+    )
+    |> Repo.all()
     |> Enum.map(fn user ->
       if reminder?(now, reminder_time, user.tz_offset, 60 * 59) do
         Task.start(fn ->
-          Delega.Slack.Interactive.send_todo_reminder(user.access_token, user.user_id)
+          Delega.Slack.Interactive.send_todo_reminder(user.team, user)
         end)
       end
     end)

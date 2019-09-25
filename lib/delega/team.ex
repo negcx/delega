@@ -5,6 +5,7 @@ defmodule Delega.Team do
   @primary_key {:team_id, :string, autogenerate: false}
   schema "team" do
     field :access_token, :string
+    field :bot_access_token, :string
 
     field :created_at, :utc_datetime_usec
     field :updated_at, :utc_datetime_usec

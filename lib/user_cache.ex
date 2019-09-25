@@ -90,9 +90,23 @@ defmodule Delega.UserCache do
 
           user ->
             user = Map.merge(%User{}, user)
-            Repo.insert(user)
 
-            Task.start(fn -> Interactive.send_welcome_msg(user_id, team.access_token) end)
+            user =
+              case team.bot_access_token do
+                nil ->
+                  user
+
+                _ ->
+                  %{
+                    user
+                    | :channel_id =>
+                        Interactive.get_user_channel(team.bot_access_token, user.user_id)
+                  }
+              end
+
+            user = Repo.insert!(user, returning: true)
+
+            Task.start(fn -> Interactive.send_welcome_msg(user, team) end)
 
             true
         end

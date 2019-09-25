@@ -155,9 +155,9 @@ defmodule DelegaWeb.SlashController do
 
           if created_user_id != user_id do
             Task.start(fn ->
-              Slack.API.post_message(%{
-                token: access_token,
-                channel: user_id,
+              Interactive.send_im(%{
+                team: team,
+                user: todo.assigned_user,
                 text: "<@#{created_user_id}> has delegated a new todo to you.",
                 blocks: Renderer.render_todo(todo)
               })

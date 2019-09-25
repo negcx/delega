@@ -9,14 +9,19 @@ defmodule DelegaWeb.OAuthController do
     client_secret = Application.get_env(:delega, :slack_client_secret)
 
     # get auth token from API
-    %{"team_id" => team_id, "access_token" => access_token} =
+    %{
+      "team_id" => team_id,
+      "access_token" => access_token,
+      "bot" => %{"bot_access_token" => bot_access_token}
+    } =
       Slack.API.oauth_access(%{client_id: client_id, client_secret: client_secret, code: code})
       |> Map.get(:body)
       |> Jason.decode!()
 
     # store auth token
-    Repo.insert(%Team{team_id: team_id, access_token: access_token},
-      on_conflict: [set: [access_token: access_token]],
+    Repo.insert(
+      %Team{team_id: team_id, access_token: access_token, bot_access_token: bot_access_token},
+      on_conflict: [set: [access_token: access_token, bot_access_token: bot_access_token]],
       conflict_target: :team_id
     )
 

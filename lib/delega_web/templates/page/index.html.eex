@@ -8,7 +8,7 @@
 
         <!-- Slack Button -->
         <div class="flex justify-center">
-            <a href="https://slack.com/oauth/authorize?client_id=<%= @client_id %>&scope=commands,chat:write:bot,users:read"><img alt="Add to Slack" height="80" width="278" src="<%= Routes.static_path(@conn, "/images/btn-add-to-slack.svg") %>" /></a>
+            <a href="https://slack.com/oauth/authorize?client_id=<%= @client_id %>&scope=commands,chat:write:bot,users:read,bot"><img alt="Add to Slack" height="80" width="278" src="<%= Routes.static_path(@conn, "/images/btn-add-to-slack.svg") %>" /></a>
         </div>
     </div>
 </div>

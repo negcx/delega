@@ -39,7 +39,7 @@ defmodule Delega.Todo do
     :created_user,
     :rejected_user,
     :channels,
-    [assignments: from(TodoAssignment, order_by: [:created_at], preload: :assigned_to_user)],
+    [assignments: from(TodoAssignment, order_by: [:created_at], preload: [:assigned_to_user, :assigned_by_user])],
     :assigned_user
   ]
 

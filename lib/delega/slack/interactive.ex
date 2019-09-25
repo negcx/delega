@@ -3,56 +3,102 @@ defmodule Delega.Slack.Interactive do
   Logic for interacting with Slack.
   """
 
-  alias Delega.Slack.{Renderer, Commands}
+  alias Delega.Slack.{Renderer, Commands, Interactive}
   alias Delega.{Repo, Team, Todo, User}
 
   def send_complete_msg(
-        to_user_id,
+        %User{} = user,
         todo = %{completed_user_id: completed_user_id, todo: todo_msg},
-        access_token
+        %Team{} = team
       ) do
-    Slack.API.post_message(%{
-      token: access_token,
-      channel: to_user_id,
+    send_im(%{
+      team: team,
+      user: user,
       text: "#{Renderer.escape_user_id(completed_user_id)} completed #{todo_msg}",
       blocks: Renderer.render_todo(todo)
     })
   end
 
+  def get_user_channel(bot_access_token, user_id) do
+    Slack.API.im_open(bot_access_token, user_id)
+    |> Map.get(:body)
+    |> Jason.decode!()
+    |> Map.get("channel")
+    |> Map.get("id")
+  end
+
+  def send_im(%{
+        team: %{bot_access_token: bot_access_token, access_token: access_token},
+        user: %{user_id: user_id, channel_id: channel},
+        text: text,
+        blocks: blocks
+      }) do
+    case bot_access_token do
+      nil ->
+        Slack.API.post_message(%{
+          token: access_token,
+          channel: user_id,
+          text: text,
+          blocks: blocks
+        })
+
+      bot_access_token ->
+        channel =
+          case channel do
+            nil ->
+              get_user_channel(bot_access_token, user_id)
+
+            channel ->
+              channel
+          end
+
+        Slack.API.post_message(%{
+          token: bot_access_token,
+          channel: channel,
+          text: text,
+          blocks: blocks
+        })
+    end
+  end
+
   def send_reject_msg(
-        to_user_id,
+        %User{} = user,
         deleted_user_id,
         todo,
-        access_token
+        %Team{} = team
       ) do
-    Slack.API.post_message(%{
-      token: access_token,
-      channel: to_user_id,
+    send_im(%{
+      team: team,
+      user: user,
       text: "#{Renderer.escape_user_id(deleted_user_id)} rejected #{todo.todo}",
       blocks: Renderer.render_todo(todo)
     })
   end
 
-  def send_bulk_complete_msg(todo, access_token) do
+  def send_bulk_complete_msg(todo, %Team{} = team) do
     MapSet.new(
-      [todo.completed_user_id, todo.created_user_id, todo.assigned_user_id] ++
-        Enum.map(todo.assignments, & &1.assigned_to_user_id) ++
-        Enum.map(todo.assignments, & &1.assigned_by_user_id)
+      [todo.completed_user, todo.created_user, todo.assigned_user] ++
+        Enum.map(todo.assignments, & &1.assigned_to_user) ++
+        Enum.map(todo.assignments, & &1.assigned_by_user)
     )
-    |> MapSet.delete(todo.completed_user_id)
-    |> Enum.map(&Task.start(fn -> send_complete_msg(&1, todo, access_token) end))
+    |> MapSet.delete(todo.completed_user)
+    |> Enum.map(&Task.start(fn -> send_complete_msg(&1, todo, team) end))
   end
 
-  def send_bulk_reject_msg(todo, rejected_user_id, access_token) do
+  def send_bulk_reject_msg(
+        %Todo{} = todo,
+        rejected_user_id,
+        %{access_token: _access_token, bot_access_token: _bot_access_token} = team
+      ) do
     MapSet.new(
-      [todo.completed_user_id, todo.created_user_id, todo.assigned_user_id] ++
-        Enum.map(todo.assignments, & &1.assigned_to_user_id) ++
-        Enum.map(todo.assignments, & &1.assigned_by_user_id)
+      [todo.rejected_user, todo.created_user, todo.assigned_user] ++
+        Enum.map(todo.assignments, & &1.assigned_to_user) ++
+        Enum.map(todo.assignments, & &1.assigned_by_user)
     )
-    |> MapSet.delete(rejected_user_id)
+    |> MapSet.delete(todo.rejected_user)
     |> Enum.map(
       &Task.start(fn ->
-        send_reject_msg(&1, rejected_user_id, todo, access_token)
+        send_reject_msg(&1, rejected_user_id, todo, team)
       end)
     )
   end
@@ -81,26 +127,32 @@ defmodule Delega.Slack.Interactive do
     end)
   end
 
-  def send_welcome_msg(user_id, access_token) do
-    Slack.API.post_message(%{
-      token: access_token,
-      channel: user_id,
+  def send_welcome_msg(%User{} = user, %Team{} = team) do
+    send_im(%{
+      user: user,
+      team: team,
       blocks: Renderer.render_welcome_msg(),
       text: "Welcome to Delega!"
     })
   end
 
-  def do_action(:complete, todo, completed_user_id, access_token, _trigger_id) do
+  def do_action(
+        :complete,
+        todo,
+        completed_user_id,
+        team,
+        _trigger_id
+      ) do
     if todo.status != "COMPLETE" do
       todo = todo |> Todo.complete!(completed_user_id)
 
       todo = Todo.get_with_assoc(todo.todo_id)
 
-      send_bulk_complete_msg(todo, access_token)
+      send_bulk_complete_msg(todo, team)
 
       notify_channels(
         todo,
-        access_token,
+        team.access_token,
         "#{Renderer.escape_user_id(completed_user_id)} completed #{todo.todo}",
         Renderer.render_todo(todo)
       )
@@ -111,7 +163,13 @@ defmodule Delega.Slack.Interactive do
     end
   end
 
-  def do_action(:reject, todo, rejected_user_id, access_token, _trigger_id) do
+  def do_action(
+        :reject,
+        todo,
+        rejected_user_id,
+        %{access_token: access_token, bot_access_token: _bot_access_token} = team,
+        _trigger_id
+      ) do
     if todo.status != "COMPLETE" do
       todo =
         todo
@@ -119,7 +177,7 @@ defmodule Delega.Slack.Interactive do
 
       todo = Todo.get_with_assoc(todo.todo_id)
 
-      send_bulk_reject_msg(todo, rejected_user_id, access_token)
+      send_bulk_reject_msg(todo, todo.rejected_user_id, team)
 
       notify_channels(
         todo,
@@ -134,7 +192,13 @@ defmodule Delega.Slack.Interactive do
     end
   end
 
-  def do_action(:assign, todo, _user_id, access_token, trigger_id) do
+  def do_action(
+        :assign,
+        todo,
+        _user_id,
+        %{access_token: access_token},
+        trigger_id
+      ) do
     Task.start(fn ->
       state =
         %{"todo_id" => todo.todo_id}
@@ -160,15 +224,15 @@ defmodule Delega.Slack.Interactive do
     []
   end
 
-  def send_todo_reminder(access_token, user_id) do
-    blocks = Commands.todo_reminder(user_id)
+  def send_todo_reminder(%Team{} = team, %User{} = user) do
+    blocks = Commands.todo_reminder(user.user_id)
 
     if blocks != nil do
-      Slack.API.post_message(%{
-        token: access_token,
-        channel: user_id,
-        blocks: blocks,
-        text: "Here are your todos for today"
+      Interactive.send_im(%{
+        team: team,
+        user: user,
+        text: "Here are your todos for today",
+        blocks: blocks
       })
     end
   end
@@ -209,7 +273,7 @@ defmodule Delega.Slack.Interactive do
       |> Base.decode64!()
       |> Jason.decode!()
 
-    %{access_token: access_token} = Team |> Repo.get!(team_id)
+    team = Team |> Repo.get!(team_id)
     todo = Todo.get_with_assoc(todo_id)
 
     case todo do
@@ -254,16 +318,16 @@ defmodule Delega.Slack.Interactive do
 
         # Post messages to followers
         MapSet.new(
-          [todo.created_user_id, todo.assigned_user_id] ++
-            Enum.map(todo.assignments, & &1.assigned_to_user_id) ++
-            Enum.map(todo.assignments, & &1.assigned_by_user_id)
+          [todo.created_user, todo.assigned_user] ++
+            Enum.map(todo.assignments, & &1.assigned_to_user) ++
+            Enum.map(todo.assignments, & &1.assigned_by_user)
         )
-        |> MapSet.delete(user_id)
+        |> MapSet.delete(assigned_by)
         |> Enum.map(
           &Task.start(fn ->
-            Slack.API.post_message(%{
-              token: access_token,
-              channel: &1,
+            send_im(%{
+              team: team,
+              user: &1,
               text:
                 "#{Renderer.escape_user_id(user_id)} re-assigned #{todo.todo} to #{
                   assign_to_user_id
@@ -282,10 +346,10 @@ defmodule Delega.Slack.Interactive do
         response_url,
         trigger_id
       ) do
-    %{access_token: access_token} = Team |> Repo.get!(team_id)
+    team = Team |> Repo.get!(team_id)
     todo = Todo.get_with_assoc(todo_id)
 
-    action_blocks = do_action(action, todo, action_user_id, access_token, trigger_id)
+    action_blocks = do_action(action, todo, action_user_id, team, trigger_id)
 
     context_blocks = Delega.Slack.ActionCallback.execute(callback)
 
