@@ -1,8 +1,7 @@
 defmodule DelegaWeb.EventsController do
   use DelegaWeb, :controller
 
-  alias Delega.{Repo, User}
-  alias Delega.Slack.{Interactive}
+  alias Delega.{Repo, Team, UserCache}
 
   def event(
         conn,
@@ -13,11 +12,11 @@ defmodule DelegaWeb.EventsController do
 
   def event(
         conn,
-        %{"event" => %{"type" => "app_home_opened", "user" => user_id, "channel" => _channel_id}}
+        %{"event" => %{"type" => "app_home_opened", "user" => user_id}, "team_id" => team_id}
       ) do
-    user = Repo.get!(User, user_id) |> Repo.preload(:team)
+    team = Repo.get!(Team, team_id)
 
-    Interactive.send_welcome_msg(user, user.team)
+    UserCache.validate_and_welcome(user_id, team)
 
     conn |> send_resp(200, "")
   end
