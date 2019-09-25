@@ -37,5 +37,6 @@ defmodule DelegaWeb.Router do
 
     post "/slash", SlashController, :slash
     post "/interactivity", SlashController, :interactivity
+    post "/events", EventsController, :event
   end
 end

@@ -156,9 +156,19 @@ defmodule Delega.Slack.Renderer do
 
   def render_welcome_msg() do
     [
-      section(
-        ":wave: Welcome to Delega! Easily track and delegate tasks without leaving Slack. Type */dg help* or */delega help* for more information."
-      )
+      section("""
+        :wave: Welcome to Delega! Easily track and delegate tasks without leaving Slack.
+
+        To see tasks assigned to you, type */dg todo*.
+
+        To assign a new task to one of your colleagues, type */dg @colleague Here's a new task!*
+
+        Once you've assigned some tasks, you can see the status with */dg list*.
+
+        To filter on tasks assigned to specific channels, use */dg list #channelname*.
+
+        Type */dg help* or */delega help* for more information.
+      """)
     ]
   end
 
