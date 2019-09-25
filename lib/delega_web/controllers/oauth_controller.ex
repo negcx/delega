@@ -28,6 +28,10 @@ defmodule DelegaWeb.OAuthController do
     # pull users
     Delega.UserCache.load_from_slack(%{team_id: team_id, access_token: access_token})
 
+    # Open user IMs if this is an existing slack workspace adding bot user
+    # TODO: Remove once all workspaces  have bot users / IMs
+    Delega.Utils.update_user_channels()
+
     redirect(conn, to: "/oauth-success")
   end
 
