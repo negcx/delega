@@ -18,8 +18,6 @@ defmodule DelegaWeb.SlashController do
   def interactivity(conn, params) do
     payload = Jason.decode!(Map.get(params, "payload"))
 
-    IO.inspect(payload)
-
     Interactive.process_interaction(payload)
 
     conn |> send_resp(200, "")
