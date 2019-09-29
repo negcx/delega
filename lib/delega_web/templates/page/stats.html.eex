@@ -1,0 +1,35 @@
+<h3 class="mt-6 text-center uppercase font-bold text-gray-700">Teams</h3>
+<p class="text-center font-bold text-6xl text-gray-800"><%= @team_count %><p>
+<div class="flex justify-center">
+    <div class="w-40">
+        <h3 class="mt-6 text-center uppercase font-bold text-gray-700">Users</h3>
+        <p class="text-center font-bold text-6xl text-gray-800"><%= @user_count %><p>
+    </div>
+
+    <div class="w-40">
+        <h3 class="mt-6 text-center uppercase font-bold text-gray-700">Created</h3>
+        <p class="text-center font-bold text-6xl text-gray-800"><%= @users_created_todos %><p>
+    </div>
+
+    <div class="w-40">
+        <h3 class="mt-6 text-center uppercase font-bold text-gray-700">Completed</h3>
+        <p class="text-center font-bold text-6xl text-gray-800"><%= @users_completed_todos %><p>
+    </div>
+</div>
+<div class="flex justify-center">
+    <div class="w-40">
+        <h3 class="mt-6 text-center uppercase font-bold text-gray-700">Todos</h3>
+        <p class="text-center font-bold text-6xl text-gray-800"><%= @todo_count %><p>
+    </div>
+
+    <div class="w-40">
+        <h3 class="mt-6 text-center uppercase font-bold text-gray-700">Completed</h3>
+        <p class="text-center font-bold text-6xl text-gray-800"><%= @completed_todos %><p>
+    </div>
+
+    <div class="w-40">
+        <h3 class="mt-6 text-center uppercase font-bold text-gray-700">Rejected</h3>
+        <p class="text-center font-bold text-6xl text-gray-800"><%= @rejected_todos %><p>
+    </div>
+</div>
+<p class="mb-12"></p>

@@ -30,6 +30,7 @@ defmodule DelegaWeb.Router do
     get "/oauth-failure", PageController, :oauth_failure
     get "/oauth-success", PageController, :oauth_success
     get "/privacy", PageController, :privacy
+    get "/stats", PageController, :stats
   end
 
   scope "/slack", DelegaWeb do

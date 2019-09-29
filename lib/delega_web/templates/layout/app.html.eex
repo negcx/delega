@@ -19,36 +19,11 @@
     </main>
 
     <footer>
-      <%# <div class="mt-12 bg-gray-800 flex flex-row justify-center w-full p-8 h-full">
-        <div class="max-w-2xl mx-auto">
-          <p class="text-gray-300 font-light mb-2 text-sm">Copyright &copy; 2019 Kyle Johnson. All rights reserved.</p>
-
-          <div>
-            <h4 class="mt-4 font-medium text-gray-200">Privacy Policy</h4>
-            <p class="text-gray-300 font-light mb-2 text-sm">Delega does not use or store any personal information.</p>
-          </div>
-
-          <div>
-            <h4 class="mt-4 font-medium text-gray-200">License</h4>
-
-            <p class="text-gray-300 font-light text-sm">
-            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-            EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-            MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-            IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-            OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-            ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-            OTHER DEALINGS IN THE SOFTWARE.</p>
-          </div>
-        </div>
-      </div> %>
-    <div class="flex flex-col sm:flex-row justify-center items-center">
-      <p class="my-3 text-gray-500 font-light mb-2 text-sm text-center content-center">Copyright &copy; 2019</p>
-
       <p class="mx-10 my-3  text-gray-700 font-light mb-2 text-sm text-center"><span class="font-bold">Need help?</span><br/><a href="mailto:support@delega.app">support@delega.app</a></p>
 
+      <p class="my-3 text-gray-500 font-light mb-2 text-sm text-center content-center">Copyright &copy; 2019</p>
+
       <p class="my-3 text-gray-500 font-light text-sm text-center"><a href="<%= DelegaWeb.Router.Helpers.page_path(DelegaWeb.Endpoint, :privacy) %>">Privacy Policy</a></p>
-    </div>
     </footer>
   </body>
 </html>

@@ -316,6 +316,14 @@ defmodule Delega.Slack.Interactive do
           )
         end)
 
+        # Post to channels
+        notify_channels(
+          todo,
+          team.access_token,
+          "#{todo.todo} assigned to #{assign_to_user_id} by #{user_id}",
+          blocks
+        )
+
         # Post messages to followers
         MapSet.new(
           [todo.created_user, todo.assigned_user] ++
@@ -332,7 +340,7 @@ defmodule Delega.Slack.Interactive do
                 "#{Renderer.escape_user_id(user_id)} re-assigned #{todo.todo} to #{
                   assign_to_user_id
                 }",
-              blocks: Renderer.render_todo(todo)
+              blocks: blocks
             })
           end)
         )
