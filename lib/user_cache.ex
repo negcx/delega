@@ -68,7 +68,7 @@ defmodule Delega.UserCache do
   def validate_and_welcome(user_id, team) do
     # First check in the database
     user = User |> Repo.get(user_id)
-
+    
     case user do
       nil ->
         # Check in the cache

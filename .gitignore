@@ -35,3 +35,4 @@ npm-debug.log
 
 /sql/seed.sql
 .elixir_ls
+tags
