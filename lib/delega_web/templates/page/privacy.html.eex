@@ -1,6 +1,7 @@
 <div class="min-w-screen">
     <div class="px-6 py-6 sm:px-12 sm:py-8 m-auto container max-w-3xl">
         <h2 class="text-3xl sm:text-6xl text-gray-900 text-center leading-none font-light mb-10">Privacy Policy</h2>
-        <p>Delega only stores your display name from Slack. Delega does not collect, log, or store any other personal information.</p>
+        <p>Some information about your team is collected in the incidental use of the command and may be logged. This could include information about your Slack workspace's team name and ID, channel ID and name, user ID and name, and any information passed to the command by the user. This data will never be used for anything other than to process your command and will never be provided to a third party.</p>
+        <p>Delega does not collect or store your email or other personal information.</p>
     </div>
 </div>
