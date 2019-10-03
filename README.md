@@ -11,10 +11,11 @@ To get started:
 - Setup your database with `./sql/setup.sh`
 - Start Phoenix endpoint with `mix phx.server`
 
-_Environment Variables_
-`SLACK_SIGNING_SECRET` Get this from your Slack API app
-`SLACK_CLIENT_ID` Get this from your Slack API app
-`SLACK_CLIENT_SECRET` Get this from your Slack API app
-`DATABASE_URL` A Postgres URL to the database (e.g. `postgres://localhost:5432/delega_dev`)
-
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+
+##Environment Variables
+
+- `SLACK_SIGNING_SECRET` Get this from your Slack API app
+- `SLACK_CLIENT_ID` Get this from your Slack API app
+- `SLACK_CLIENT_SECRET` Get this from your Slack API app
+- `DATABASE_URL` A Postgres URL to the database (e.g. `postgres://localhost:5432/delega_dev`)
