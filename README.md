@@ -13,7 +13,7 @@ To get started:
 
 Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
-##Environment Variables
+## Environment Variables
 
 - `SLACK_SIGNING_SECRET` Get this from your Slack API app
 - `SLACK_CLIENT_ID` Get this from your Slack API app
