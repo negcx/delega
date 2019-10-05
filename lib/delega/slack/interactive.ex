@@ -227,7 +227,7 @@ defmodule Delega.Slack.Interactive do
   def send_todo_reminder(%Team{} = team, %User{} = user) do
     blocks = Commands.todo_reminder(user.user_id)
 
-    if blocks != nil do
+    if length(blocks) > 0 do
       Interactive.send_im(%{
         team: team,
         user: user,

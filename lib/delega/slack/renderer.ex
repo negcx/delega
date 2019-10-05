@@ -239,7 +239,7 @@ defmodule Delega.Slack.Renderer do
   end
 
   def render_todo_reminder(todos, _action_callback) when length(todos) == 0 do
-    [section(":white_check_mark: *You have no todos!*")]
+    []
   end
 
   def render_todo_reminder(todos, action_callback) when length(todos) > 0 do
