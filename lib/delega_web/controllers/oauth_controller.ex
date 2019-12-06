@@ -21,7 +21,7 @@ defmodule DelegaWeb.OAuthController do
 
     # store auth token
     team =
-      Repo.insert(
+      Repo.insert!(
         %Team{team_id: team_id, access_token: access_token, bot_access_token: bot_access_token},
         on_conflict: [set: [access_token: access_token, bot_access_token: bot_access_token]],
         conflict_target: :team_id,
