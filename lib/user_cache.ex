@@ -31,8 +31,10 @@ defmodule Delega.UserCache do
   end
 
   def load_from_slack(%{team_id: team_id, access_token: access_token}) do
+    IO.puts("team_id: " <> team_id)
+
     users =
-      Slack.API.get_users(access_token)
+      IO.inspect(Slack.API.get_users(access_token))
       |> Map.get(:body)
       |> Jason.decode!()
       |> Map.get("members")
@@ -68,7 +70,7 @@ defmodule Delega.UserCache do
   def validate_and_welcome(user_id, team) do
     # First check in the database
     user = User |> Repo.get(user_id)
-    
+
     case user do
       nil ->
         # Check in the cache
