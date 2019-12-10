@@ -21,6 +21,11 @@ defmodule Slack.SlackAPITest do
     assert Slack.API.parse_users(text) == ["UMAFQ97F1", "UMAFQ97F1"]
   end
 
+  test "User with period capture" do
+    text = "<@UAR9BKJKF|peter.ramsing> test"
+    assert Slack.API.parse_users(text) == ["UAR9BKJKF"]
+  end
+
   describe "trim_channels/1" do
     test "Multiple channels with whitespace and without whitspace" do
       text =

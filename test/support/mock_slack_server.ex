@@ -34,6 +34,7 @@ defmodule Delega.MockSlackServer do
     |> send_resp(
       200,
       Jason.encode!(%{
+        "ok" => true,
         "members" => [
           %{
             "id" => "Kyle",
