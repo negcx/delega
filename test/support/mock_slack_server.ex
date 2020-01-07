@@ -52,7 +52,8 @@ defmodule Delega.MockSlackServer do
               "display_name_normalized" => "gelita"
             }
           }
-        ]
+        ],
+        "response_metadata" => %{"next_cursor" => ""}
       })
     )
   end

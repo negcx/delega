@@ -31,32 +31,25 @@ defmodule Delega.UserCache do
   end
 
   def load_from_slack(%{team_id: team_id, access_token: access_token}) do
-    response =
-      Slack.API.get_users(access_token)
-      |> Map.get(:body)
-      |> Jason.decode!()
+    try do
+      users =
+        Slack.API.get_users!(access_token)
+        |> Enum.reduce(Map.new(), fn user, map ->
+          Map.put(map, Map.get(user, "id"), %{
+            user_id: Map.get(user, "id"),
+            tz_offset: Map.get(user, "tz_offset"),
+            team_id: team_id,
+            is_deleted: Map.get(user, "deleted"),
+            display_name: Map.get(user, "profile") |> Map.get("display_name_normalized")
+          })
+        end)
 
-    case response |> Map.get("ok") do
-      true ->
-        users =
-          response
-          |> Map.get("members")
-          |> Enum.reduce(Map.new(), fn user, map ->
-            Map.put(map, Map.get(user, "id"), %{
-              user_id: Map.get(user, "id"),
-              tz_offset: Map.get(user, "tz_offset"),
-              team_id: team_id,
-              is_deleted: Map.get(user, "deleted"),
-              display_name: Map.get(user, "profile") |> Map.get("display_name_normalized")
-            })
-          end)
-
-        Delega.UserCache.put(team_id, users)
-
-      false ->
+      Delega.UserCache.put(team_id, users)
+    catch
+      e ->
         IO.puts(
           "Error loading users for team_id " <>
-            team_id <> ", error: " <> Map.get(response, "error")
+            team_id <> ", error: " <> e
         )
     end
   end

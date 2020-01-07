@@ -63,10 +63,77 @@ defmodule Slack.API do
     )
   end
 
-  def get_users(token) do
-    HTTPoison.get!(@base_url <> "users.list", [
-      {"Authorization", "Bearer " <> token}
-    ])
+  def get_users!(token, next_cursor) do
+    resp =
+      HTTPoison.get!(
+        @base_url <> "users.list",
+        [
+          {"Authorization", "Bearer " <> token}
+        ],
+        params: %{
+          "cursor" => next_cursor,
+          "limit" => 1000
+        }
+      )
+      |> Map.get(:body)
+      |> Jason.decode!()
+
+    case resp |> Map.get("ok") do
+      true ->
+        case resp |> Map.get("response_metadata") |> Map.get("next_cursor") do
+          "" ->
+            resp |> Map.get("members")
+
+          nil ->
+            resp |> Map.get("members")
+
+          next_cursor ->
+            IO.puts(
+              "Member count: " <> Integer.to_string(Map.get(resp, "members") |> Enum.count())
+            )
+
+            resp |> Map.get("members") |> Enum.concat(Slack.API.get_users!(token, next_cursor))
+        end
+
+      false ->
+        throw("users.list returned OK=false")
+    end
+  end
+
+  def get_users!(token) do
+    resp =
+      HTTPoison.get!(
+        @base_url <> "users.list",
+        [
+          {"Authorization", "Bearer " <> token}
+        ],
+        params: %{
+          "limit" => 1000
+        }
+      )
+      |> Map.get(:body)
+      |> Jason.decode!()
+
+    case resp |> Map.get("ok") do
+      true ->
+        case resp |> Map.get("response_metadata") |> Map.get("next_cursor") do
+          "" ->
+            resp |> Map.get("members")
+
+          nil ->
+            resp |> Map.get("members")
+
+          next_cursor ->
+            IO.puts(
+              "Member count: " <> Integer.to_string(Map.get(resp, "members") |> Enum.count())
+            )
+
+            resp |> Map.get("members") |> Enum.concat(Slack.API.get_users!(token, next_cursor))
+        end
+
+      false ->
+        throw("users.list returned OK=false")
+    end
   end
 
   def get_channels(token) do
