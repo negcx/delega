@@ -23,7 +23,7 @@
     "optimize-css-assets-webpack-plugin": "^4.0.0",
     "postcss-loader": "^3.0.0",
     "uglifyjs-webpack-plugin": "^1.2.4",
-    "webpack": "4.4.0",
+    "webpack": "^4.41.5",
     "webpack-cli": "^2.0.10"
   }
 }
