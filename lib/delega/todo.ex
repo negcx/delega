@@ -111,6 +111,8 @@ defmodule Delega.Todo do
           preload: ^@preload
       )
 
+    dt = DateTime.utc_now() |> DateTime.add(-days * 60 * 60 * 24, :second)
+
     completed_todos =
       Repo.all(
         from t in Todo,
@@ -118,7 +120,7 @@ defmodule Delega.Todo do
           where:
             c.channel_id == ^channel_id and
               t.status == "COMPLETE" and
-              t.completed_at >= fragment("now() - interval '? days'", ^days),
+              t.completed_at >= ^dt,
           order_by: t.created_at,
           preload: ^@preload
       )

@@ -45,7 +45,7 @@ defmodule Delega.Slack.Renderer do
           completed_at: completed_at,
           channels: channels
         } = _todo,
-        _action_callback = nil
+        _action_callback
       ) do
     completed_tf = dt_to_timeframe(completed_at)
 
