@@ -39,7 +39,13 @@ defmodule Delega.Todo do
     :created_user,
     :rejected_user,
     :channels,
-    [assignments: from(TodoAssignment, order_by: [:created_at], preload: [:assigned_to_user, :assigned_by_user])],
+    [
+      assignments:
+        from(TodoAssignment,
+          order_by: [:created_at],
+          preload: [:assigned_to_user, :assigned_by_user]
+        )
+    ],
     :assigned_user
   ]
 
@@ -91,6 +97,33 @@ defmodule Delega.Todo do
         order_by: t.created_at,
         preload: ^@preload
     )
+  end
+
+  def get_channel_todos(days, channel_id) do
+    new_todos =
+      Repo.all(
+        from t in Todo,
+          join: c in assoc(t, :channels),
+          where:
+            c.channel_id == ^channel_id and
+              t.status == "NEW",
+          order_by: t.created_at,
+          preload: ^@preload
+      )
+
+    completed_todos =
+      Repo.all(
+        from t in Todo,
+          join: c in assoc(t, :channels),
+          where:
+            c.channel_id == ^channel_id and
+              t.status == "COMPLETE" and
+              t.completed_at >= fragment("now() - interval '? days'", ^days),
+          order_by: t.created_at,
+          preload: ^@preload
+      )
+
+    new_todos ++ completed_todos
   end
 
   def get_assigned_todos(assigned_user_id) do

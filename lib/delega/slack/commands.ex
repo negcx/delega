@@ -13,6 +13,17 @@ defmodule Delega.Slack.Commands do
     Renderer.render_channel_todos(todos, channel_id, callback)
   end
 
+  def listX_channel(days, channel_id) do
+    callback = %ActionCallback{
+      function: :listX_channel,
+      args: [days, channel_id]
+    }
+
+    todos = Todo.get_channel_todos(days, channel_id)
+
+    Renderer.render_channel_todos(todos, channel_id, callback)
+  end
+
   def list_todo_channel(user_id, channel_id) do
     callback = %ActionCallback{
       function: :list_todo_channel,
