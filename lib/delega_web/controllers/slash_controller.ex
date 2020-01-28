@@ -73,8 +73,8 @@ defmodule DelegaWeb.SlashController do
   end
 
   def slash(conn, %{"text" => "list" <> params}) do
-    tokens = String.split(params)
-    days = tokens |> hd |> String.to_integer()
+    tokens = IO.inspect(String.split(params))
+    days = IO.inspect(tokens |> hd |> String.to_integer())
     [_hd | channel_tokens] = tokens
 
     channel_id = Slack.API.parse_channels(Enum.join(channel_tokens, " ")) |> hd
