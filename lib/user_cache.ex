@@ -106,6 +106,7 @@ defmodule Delega.UserCache do
                     user
                     | :channel_id =>
                         Interactive.get_user_channel(team.bot_access_token, user.user_id)
+                        |> IO.inspect(label: "get_user_channel")
                   }
               end
 

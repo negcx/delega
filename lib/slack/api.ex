@@ -17,9 +17,9 @@ defmodule Slack.API do
 
   def im_open(access_token, user_id) do
     HTTPoison.post!(
-      @base_url <> "im.open",
+      @base_url <> "conversations.open",
       Jason.encode!(%{
-        "user" => user_id
+        "users" => [user_id]
       }),
       [
         {"Authorization", "Bearer " <> access_token},

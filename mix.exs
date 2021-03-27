@@ -45,7 +45,7 @@ defmodule Delega.MixProject do
       {:gettext, "~> 0.11"},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:httpoison, "~> 1.5"},
+      {:httpoison, "~> 1.8"},
       {:mix_test_watch, "~> 0.9.0", only: :dev, runtime: false},
       {:excoveralls, "~> 0.10", only: :test},
       {:plug, "~> 1.8"},
