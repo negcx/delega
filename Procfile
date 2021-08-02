@@ -1,2 +1,2 @@
-web: elixir --name delega@127.0.0.1 --cookie $COOKIE -S mix phx.server
+web: ./.platform_tools/elixir/bin/mix phx.server
 release: ./sql/migrate.sh
