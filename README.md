@@ -19,3 +19,5 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 - `SLACK_CLIENT_ID` Get this from your Slack API app
 - `SLACK_CLIENT_SECRET` Get this from your Slack API app
 - `DATABASE_URL` A Postgres URL to the database (e.g. `postgres://localhost:5432/delega_dev`)
+
+Forcing a push!
