@@ -96,7 +96,7 @@ defmodule Slack.API do
         end
 
       false ->
-        throw("users.list returned OK=false")
+        throw("users.list returned OK=false, #{resp}")
     end
   end
 
